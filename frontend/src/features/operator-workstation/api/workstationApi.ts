@@ -12,10 +12,9 @@ export interface OperatorReportPayload {
 
 export const workstationApi = {
   submitShiftReport: async (
-    payload: OperatorReportPayload
+    payload: OperatorReportPayload,
   ): Promise<{ status: string; message: string }> => {
     const res = await apiClient.post(API_ENDPOINTS.OPERATOR_REPORT, payload);
     return res.data;
   },
 };
-

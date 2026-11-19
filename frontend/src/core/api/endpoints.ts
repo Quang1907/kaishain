@@ -1,5 +1,6 @@
 /**
  * Centralized API Endpoints Registry
+ * Toàn bộ route backend SQLite & AI Brain được quản lý tập trung ở đây
  * Toàn bộ route backend PostgreSQL Server, Auth RBAC & AI Brain được quản lý tập trung ở đây
  */
 export const API_ENDPOINTS = {
@@ -18,10 +19,7 @@ export const API_ENDPOINTS = {
   BREAKS: "/breaks",
 
   // Factory Scheduling & Execution
-  SCHEDULES: "/schedules",
   SCHEDULE: "/schedule",
-  JOBS: "/jobs",
-  JOBS_DELETE: "/jobs/delete",
   READINESS: "/readiness",
   OPTIMIZE: "/optimize",
   FEEDBACK: "/feedback",

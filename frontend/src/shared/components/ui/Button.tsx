@@ -16,14 +16,19 @@ export const Button: React.FC<ButtonProps> = ({
   disabled,
   ...props
 }) => {
-  const baseStyles = "inline-flex items-center justify-center font-medium transition-all duration-150 rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-factory-bg disabled:opacity-50 disabled:cursor-not-allowed";
+  const baseStyles =
+    "inline-flex items-center justify-center font-medium transition-all duration-150 rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-factory-bg disabled:opacity-50 disabled:cursor-not-allowed";
 
   const variants = {
-    primary: "bg-blue-600 hover:bg-blue-500 text-white focus:ring-blue-500 shadow-lg shadow-blue-500/20 active:scale-[0.98]",
-    secondary: "bg-factory-card hover:bg-factory-border text-slate-200 border border-factory-border focus:ring-slate-500",
-    danger: "bg-rose-600 hover:bg-rose-500 text-white focus:ring-rose-500 shadow-lg shadow-rose-500/20",
+    primary:
+      "bg-blue-600 hover:bg-blue-500 text-white focus:ring-blue-500 shadow-lg shadow-blue-500/20 active:scale-[0.98]",
+    secondary:
+      "bg-factory-card hover:bg-factory-border text-slate-200 border border-factory-border focus:ring-slate-500",
+    danger:
+      "bg-rose-600 hover:bg-rose-500 text-white focus:ring-rose-500 shadow-lg shadow-rose-500/20",
     ghost: "text-slate-400 hover:text-white hover:bg-slate-800/60",
-    outline: "border border-blue-500/50 text-blue-400 hover:bg-blue-500/10 focus:ring-blue-500",
+    outline:
+      "border border-blue-500/50 text-blue-400 hover:bg-blue-500/10 focus:ring-blue-500",
   };
 
   const sizes = {
@@ -45,4 +50,3 @@ export const Button: React.FC<ButtonProps> = ({
     </button>
   );
 };
-
