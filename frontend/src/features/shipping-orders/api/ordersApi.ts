@@ -26,3 +26,15 @@ export const useCreateShippingOrderMutation = () => {
   });
 };
 
+export const useDeleteShippingOrderMutation = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (orderId: string) => {
+      const res = await apiClient.post("/shipping-orders/delete", { order_id: orderId });
+      return res.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["shipping-orders"] });
+    },
+  });
+};

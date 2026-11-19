@@ -1,14 +1,19 @@
 import React, { useState } from "react";
-import { useShippingOrdersQuery, useCreateShippingOrderMutation } from "../api/ordersApi";
+import {
+  useShippingOrdersQuery,
+  useCreateShippingOrderMutation,
+  useDeleteShippingOrderMutation,
+} from "../api/ordersApi";
 import { Button } from "@/shared/components/ui/Button";
 import { Badge } from "@/shared/components/ui/Badge";
 import { Modal } from "@/shared/components/ui/Modal";
 import { formatNumber, formatTimeHour } from "@/shared/utils/formatters";
-import { Plus, Clock, Calendar } from "lucide-react";
+import { Plus, Clock, Calendar, Trash2 } from "lucide-react";
 
 export const ShippingOrdersView: React.FC = () => {
   const { data: orders, isLoading } = useShippingOrdersQuery();
   const createOrderMutation = useCreateShippingOrderMutation();
+  const deleteOrderMutation = useDeleteShippingOrderMutation();
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   // Form State
@@ -30,6 +35,12 @@ export const ShippingOrdersView: React.FC = () => {
     setIsModalOpen(false);
   };
 
+  const handleDelete = (orderId: string) => {
+    if (window.confirm(`Bạn có chắc chắn muốn xóa đơn ${orderId} khỏi Database?`)) {
+      deleteOrderMutation.mutate(orderId);
+    }
+  };
+
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
@@ -38,7 +49,7 @@ export const ShippingOrdersView: React.FC = () => {
             Quản Lý Lệnh Xuất Hàng Khách Hàng (Shipping Orders)
           </h2>
           <p className="text-xs text-slate-400 mt-1">
-            Đầu vào bắt buộc cho thuật toán Lập lịch ngược JIT (Backward Dispatching)
+            Đầu vào bắt buộc cho thuật toán Lập lịch ngược JIT • Lưu trữ trực tiếp trong PostgreSQL/SQLite
           </p>
         </div>
         <Button onClick={() => setIsModalOpen(true)} className="gap-2">
@@ -58,21 +69,22 @@ export const ShippingOrdersView: React.FC = () => {
               <th className="px-5 py-3">Số Lượng Đặt</th>
               <th className="px-5 py-3">Ngày Xuất Hàng</th>
               <th className="px-5 py-3">Hạn Giao Hàng</th>
-              <th className="px-5 py-3">Quy Cách Đóng Gói</th>
+              <th className="px-5 py-3">Bao Bì</th>
               <th className="px-5 py-3">Trạng Thái</th>
+              <th className="px-5 py-3 text-right">Thao Tác</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-factory-border">
             {isLoading ? (
               <tr>
-                <td colSpan={8} className="px-5 py-8 text-center text-slate-500">
-                  Đang tải danh sách lệnh xuất...
+                <td colSpan={9} className="px-5 py-8 text-center text-slate-500">
+                  Đang tải danh sách lệnh xuất từ Database...
                 </td>
               </tr>
             ) : orders?.length === 0 ? (
               <tr>
-                <td colSpan={8} className="px-5 py-8 text-center text-slate-500">
-                  Chưa có lệnh xuất hàng nào.
+                <td colSpan={9} className="px-5 py-8 text-center text-slate-500">
+                  Chưa có lệnh xuất hàng nào trong Database.
                 </td>
               </tr>
             ) : (
@@ -95,10 +107,20 @@ export const ShippingOrdersView: React.FC = () => {
                     </span>
                   </td>
                   <td className="px-5 py-3.5 text-xs text-slate-400">
-                    {ord.required_boxes ? `${ord.required_boxes} thùng (${ord.box_type || "KLT"})` : "-"}
+                    {ord.required_boxes ? `${ord.required_boxes} thùng` : "-"}
                   </td>
                   <td className="px-5 py-3.5">
                     <Badge variant="success">JIT TIẾP NHẬN</Badge>
+                  </td>
+                  <td className="px-5 py-3.5 text-right">
+                    <button
+                      onClick={() => handleDelete(ord.order_id)}
+                      disabled={deleteOrderMutation.isPending}
+                      className="p-1 rounded text-slate-500 hover:text-rose-400 hover:bg-rose-950/30 transition-colors"
+                      title="Xóa đơn hàng khỏi Database"
+                    >
+                      <Trash2 size={15} />
+                    </button>
                   </td>
                 </tr>
               ))
@@ -108,7 +130,7 @@ export const ShippingOrdersView: React.FC = () => {
       </div>
 
       {/* Modal Tạo Lệnh Mới */}
-      <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title="Tạo Lệnh Xuất Hàng Mới">
+      <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title="Tạo Lệnh Xuất Hàng Mới Vào Database">
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-xs font-semibold text-slate-300 uppercase mb-1">
@@ -186,7 +208,7 @@ export const ShippingOrdersView: React.FC = () => {
               Hủy
             </Button>
             <Button variant="primary" type="submit" isLoading={createOrderMutation.isPending}>
-              Lưu Vào Database SQLite
+              Lưu Vào Database
             </Button>
           </div>
         </form>

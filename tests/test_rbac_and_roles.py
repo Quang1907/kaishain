@@ -11,6 +11,11 @@ from backend.database.repository import repository
 
 class TestRBACAndRoleWorkflows(unittest.TestCase):
 
+    @classmethod
+    def setUpClass(cls):
+        from backend.database.db_seeder import seed_database
+        seed_database(force_reseed=False)
+
     def test_01_password_hashing_and_verification(self):
         """Kiểm tra mã hóa mật khẩu SHA256 kèm muối bảo mật (Salt)"""
         pwd = "SecretPassword123!"

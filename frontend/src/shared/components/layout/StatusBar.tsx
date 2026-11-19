@@ -56,7 +56,7 @@ export const StatusBar: React.FC = () => {
         )}
 
         <div className="flex items-center gap-1 text-slate-300 font-mono">
-          <span>Giờ mô phỏng: <strong className="text-blue-400">{formatTimeHour(currentHour)}</strong></span>
+          <span>Giờ vận hành: <strong className="text-blue-400">{formatTimeHour(currentHour)}</strong></span>
         </div>
 
         <span className="flex items-center gap-1 text-emerald-400 font-semibold">

@@ -184,3 +184,14 @@ CREATE TABLE IF NOT EXISTS material_prep_logs (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 """
+
+def init_sqlite_ddl(target):
+    import sqlite3
+    if isinstance(target, str):
+        conn = sqlite3.connect(target)
+        conn.executescript(SQLITE_SCHEMA_SQL)
+        conn.commit()
+        conn.close()
+    else:
+        target.executescript(SQLITE_SCHEMA_SQL)
+        target.commit()
