@@ -1,0 +1,1516 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bộ Não Lập Lịch & Điều Hành Sản Xuất Thông Minh - Plastic Injection APS</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          gridTemplateColumns: {
+            '24': 'repeat(24, minmax(0, 1fr))',
+          },
+          gridColumn: {
+            'span-24': 'span 24 / span 24',
+          }
+        }
+      }
+    };
+  </script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col font-sans selection:bg-indigo-500 selection:text-white">
+
+  <!-- TOP HEADER / CONTROL CENTER BAR -->
+  <header class="bg-slate-900 border-b border-slate-800 sticky top-0 z-40 shadow-xl backdrop-blur-md bg-opacity-95">
+    <div class="max-w-[1750px] mx-auto px-4 py-2.5 flex flex-wrap items-center justify-between gap-3">
+      
+      <!-- Logo & System Title -->
+      <div class="flex items-center space-x-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 via-blue-500 to-cyan-400 flex items-center justify-center shadow-lg shadow-indigo-500/20">
+          <i class="fa-solid fa-brain text-white text-xl animate-pulse"></i>
+        </div>
+        <div>
+          <div class="flex items-center space-x-2">
+            <h1 class="text-base font-bold text-white tracking-wide">BỘ NÃO ĐIỀU HÀNH & LẬP LỊCH SẢN XUẤT (APS BRAIN)</h1>
+            <span class="px-2 py-0.5 text-[11px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-full flex items-center gap-1">
+              <span class="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span> Live APS
+            </span>
+            <span id="db-status-badge" class="px-2 py-0.5 text-[11px] font-mono font-medium bg-cyan-950 text-cyan-300 border border-cyan-800/60 rounded-full flex items-center gap-1">
+              <i class="fa-solid fa-database text-cyan-400"></i> SQLite DB: <span id="db-size-label">144 KB</span>
+            </span>
+          </div>
+          <p class="text-xs text-slate-400">Nhà máy Ép nhựa • 22 Máy ép (2-13 & 15-25号機) • 3 Chân Kiềng: Thùng - Sấy Nhựa - Người Đứng Máy</p>
+        </div>
+      </div>
+
+      <!-- Main Navigation Tabs -->
+      <nav class="flex items-center space-x-1 bg-slate-950 p-1 rounded-xl border border-slate-800 text-xs font-semibold">
+        <button onclick="switchView('gantt')" id="tab-nav-gantt" class="px-3 py-1.5 rounded-lg bg-indigo-600 text-white shadow flex items-center gap-1.5 transition">
+          <i class="fa-solid fa-chart-gantt"></i> Bảng Lập Lịch 24H
+        </button>
+        <button onclick="switchView('orders')" id="tab-nav-orders" class="px-3 py-1.5 rounded-lg text-slate-400 hover:text-white flex items-center gap-1.5 transition">
+          <i class="fa-solid fa-truck-ramp-box"></i> Lệnh Xuất Hàng
+        </button>
+        <button onclick="switchView('machines')" id="tab-nav-machines" class="px-3 py-1.5 rounded-lg text-slate-400 hover:text-white flex items-center gap-1.5 transition">
+          <i class="fa-solid fa-industry"></i> 22 Máy Ép
+        </button>
+        <button onclick="switchView('products')" id="tab-nav-products" class="px-3 py-1.5 rounded-lg text-slate-400 hover:text-white flex items-center gap-1.5 transition">
+          <i class="fa-solid fa-cubes-stacked"></i> Hàng & BOM
+        </button>
+        <button onclick="switchView('operators')" id="tab-nav-operators" class="px-3 py-1.5 rounded-lg text-slate-400 hover:text-white flex items-center gap-1.5 transition">
+          <i class="fa-solid fa-users-gear"></i> Nhân Lực
+        </button>
+        <button onclick="switchView('database')" id="tab-nav-database" class="px-3 py-1.5 rounded-lg text-slate-400 hover:text-white flex items-center gap-1.5 transition">
+          <i class="fa-solid fa-server text-cyan-400"></i> Cơ Sở Dữ Liệu
+        </button>
+        <button onclick="switchView('admin')" id="tab-nav-admin" class="px-3 py-1.5 rounded-lg text-amber-300 hover:text-white flex items-center gap-1.5 transition border border-amber-500/40 bg-amber-950/20 font-bold">
+          <i class="fa-solid fa-user-shield text-amber-400"></i> Quản Trị Admin
+        </button>
+      </nav>
+
+      <!-- Action Buttons -->
+      <div class="flex items-center space-x-2">
+        <button onclick="triggerOptimization()" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white shadow-lg shadow-indigo-500/25 flex items-center gap-1.5 transition">
+          <i class="fa-solid fa-wand-magic-sparkles"></i> AI Tối Ưu Hóa
+        </button>
+        <button onclick="openFeedbackModal()" class="px-2.5 py-1.5 rounded-lg text-xs font-medium bg-slate-800 hover:bg-slate-700 text-amber-300 border border-slate-700 flex items-center gap-1.5 transition" title="Nhập dữ liệu phế phẩm thực tế để huấn luyện AI đệm an toàn">
+          <i class="fa-solid fa-graduation-cap"></i> Huấn Luyện AI
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN VIEW CONTAINER -->
+  <main class="max-w-[1750px] mx-auto px-4 py-3.5 flex-1 space-y-4 w-full">
+
+    <!-- ============================================================== -->
+    <!-- VIEW 1: GANTT SCHEDULE & JIT READINESS RADAR (CORE VIEW) -->
+    <!-- ============================================================== -->
+    <div id="view-gantt" class="space-y-4">
+      
+      <!-- Sub-Bar: Day Tabs & Time Scrubber -->
+      <div class="flex flex-wrap items-center justify-between gap-3 bg-slate-900/90 border border-slate-800 p-2.5 rounded-xl">
+        <div class="flex items-center space-x-2">
+          <span class="text-xs text-slate-400 font-semibold uppercase tracking-wider mr-1">Lịch sản xuất:</span>
+          <div class="flex items-center bg-slate-950 p-1 rounded-xl border border-slate-800">
+            <button id="btn-day1" onclick="switchSchedule('2026-11-12')" class="px-3 py-1 rounded-lg text-xs font-semibold bg-indigo-600 text-white shadow flex items-center gap-1.5">
+              <i class="fa-regular fa-calendar"></i> 11月12日 木 (Thứ 5)
+            </button>
+            <button id="btn-day2" onclick="switchSchedule('2026-11-13')" class="px-3 py-1 rounded-lg text-xs font-semibold text-slate-400 hover:text-white flex items-center gap-1.5">
+              <i class="fa-regular fa-calendar-check"></i> 11月13日 金 (Thứ 6)
+            </button>
+            <button id="btn-opt" onclick="switchSchedule('optimized')" class="px-3 py-1 rounded-lg text-xs font-semibold text-amber-300 hover:text-white hover:bg-amber-600/30 flex items-center gap-1.5 border border-amber-500/30">
+              <i class="fa-solid fa-microchip text-amber-400"></i> AI Tối Ưu Ca Kế Tiếp
+            </button>
+          </div>
+        </div>
+
+        <!-- Timeline Time Slider -->
+        <div class="flex items-center space-x-3 bg-slate-950 px-3 py-1 rounded-xl border border-slate-800">
+          <span class="text-xs text-slate-400 font-medium"><i class="fa-regular fa-clock text-indigo-400"></i> Giờ giả lập:</span>
+          <input type="range" id="hour-slider" min="7" max="31" step="0.5" value="8" class="w-32 accent-indigo-500 cursor-pointer" oninput="onHourChange(this.value)">
+          <span id="current-hour-display" class="text-xs font-bold text-indigo-300 bg-indigo-950 px-2.5 py-0.5 rounded border border-indigo-700/50">08:00</span>
+        </div>
+
+        <div class="text-xs text-slate-400 flex items-center gap-2">
+          <span>Quy tắc: <strong class="text-emerald-400">1 hàng chỉ chạy 1 lần trên 1 máy</strong></span>
+          <span class="text-slate-600">|</span>
+          <span>Dừng điện: <strong class="text-rose-400">□ 計画停止</strong></span>
+        </div>
+      </div>
+
+      <!-- KPI METRICS BANNER -->
+      <section class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+        <!-- Card 1 -->
+        <div class="bg-slate-900/80 border border-slate-800 rounded-xl p-3 flex items-center justify-between">
+          <div>
+            <p class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Trạng Thái 22 Máy Ép</p>
+            <div class="flex items-baseline space-x-2 mt-0.5">
+              <span id="kpi-active-machines" class="text-2xl font-black text-emerald-400">18</span>
+              <span class="text-xs text-slate-400">/ 22 Máy Chạy</span>
+            </div>
+            <div class="flex items-center space-x-2 mt-1 text-[11px] text-slate-400">
+              <span class="text-amber-400"><span id="kpi-mold-changes">3</span> Thay khuôn ○</span>
+              <span>•</span>
+              <span class="text-rose-400"><span id="kpi-stopped-machines">4</span> Tắt máy □</span>
+            </div>
+          </div>
+          <div class="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 text-lg">
+            <i class="fa-solid fa-industry"></i>
+          </div>
+        </div>
+
+        <!-- Card 2 -->
+        <div class="bg-slate-900/80 border border-slate-800 rounded-xl p-3 flex items-center justify-between">
+          <div>
+            <p class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Độ Sẵn Sàng Xuất Hàng (JIT)</p>
+            <div class="flex items-baseline space-x-2 mt-0.5">
+              <span id="kpi-readiness-score" class="text-2xl font-black text-cyan-400">100%</span>
+              <span class="text-xs text-emerald-400 font-medium">Không Thiếu Hàng</span>
+            </div>
+            <p class="text-[11px] text-slate-400 mt-1">Đơn hàng đủ sấy hạt nhựa & thùng</p>
+          </div>
+          <div class="w-10 h-10 rounded-xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-400 text-lg">
+            <i class="fa-solid fa-truck-fast"></i>
+          </div>
+        </div>
+
+        <!-- Card 3 -->
+        <div class="bg-slate-900/80 border border-slate-800 rounded-xl p-3 flex items-center justify-between">
+          <div>
+            <p class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Sấy Nhựa & Xuất Thùng</p>
+            <div class="flex items-baseline space-x-2 mt-0.5">
+              <span id="kpi-drying-hoppers" class="text-2xl font-black text-amber-400">8</span>
+              <span class="text-xs text-slate-400">Phễu sấy đang chạy</span>
+            </div>
+            <div class="flex items-center space-x-2 mt-1 text-[11px] text-slate-400">
+              <span class="text-blue-400">3 Mã Dry-Coat (青○)</span>
+              <span>•</span>
+              <span class="text-purple-400">14 Thùng sẵn sàng</span>
+            </div>
+          </div>
+          <div class="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400 text-lg">
+            <i class="fa-solid fa-fire-burner"></i>
+          </div>
+        </div>
+
+        <!-- Card 4 -->
+        <div class="bg-slate-900/80 border border-slate-800 rounded-xl p-3 flex items-center justify-between">
+          <div>
+            <p class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Nhân Lực & Xoay Tua Nghỉ</p>
+            <div class="flex items-baseline space-x-2 mt-0.5">
+              <span id="kpi-operators-onshift" class="text-2xl font-black text-purple-400">16</span>
+              <span class="text-xs text-slate-400">Người Trong Ca</span>
+            </div>
+            <div class="flex items-center space-x-2 mt-1 text-[11px] text-slate-400">
+              <span class="text-emerald-400">6 Đứng theo con hàng</span>
+              <span>•</span>
+              <span class="text-indigo-400">2 Người chạy chuyền</span>
+            </div>
+          </div>
+          <div class="w-10 h-10 rounded-xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-purple-400 text-lg">
+            <i class="fa-solid fa-users-gear"></i>
+          </div>
+        </div>
+      </section>
+
+      <!-- JIT READINESS RADAR CARDS -->
+      <section class="bg-slate-900/90 border border-slate-800 rounded-xl p-3.5 shadow-lg">
+        <div class="flex flex-wrap items-center justify-between gap-2 mb-2.5 border-b border-slate-800/80 pb-2">
+          <div class="flex items-center space-x-2">
+            <i class="fa-solid fa-crosshairs text-indigo-400"></i>
+            <h2 class="text-xs font-bold text-white uppercase tracking-wide">
+              BỘ NÃO CHUẨN BỊ TRƯỚC GIỜ XUẤT HÀNG (JIT READINESS RADAR)
+            </h2>
+          </div>
+          <span class="text-[11px] text-slate-400">Chuỗi cung ứng JIT: Xuất hàng ← Đóng thùng ← Ép ← Thay khuôn ○ ← Sấy nhựa (2-4.5h)</span>
+        </div>
+        <div id="readiness-cards-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+          <!-- Rendered dynamically -->
+        </div>
+      </section>
+
+      <!-- 24-HOUR VISUAL GANTT BOARD -->
+      <section class="bg-slate-900 border border-slate-800 rounded-xl p-3.5 shadow-xl overflow-hidden flex flex-col">
+        <div class="flex flex-wrap items-center justify-between gap-3 mb-2.5 border-b border-slate-800 pb-2">
+          <div class="flex items-center space-x-3">
+            <h2 class="text-xs font-bold text-white uppercase tracking-wide flex items-center gap-2">
+              <i class="fa-solid fa-chart-gantt text-indigo-400"></i>
+              BẢNG ĐIỀU HÀNH 24 GIỜ TIẾN ĐỘ SẢN XUẤT (GANTT SCHEDULE BOARD)
+            </h2>
+            <span id="schedule-title-badge" class="text-[11px] font-semibold px-2 py-0.5 bg-indigo-950 text-indigo-300 border border-indigo-700/50 rounded">
+              11月12日 木曜日
+            </span>
+          </div>
+
+          <!-- Legend -->
+          <div class="flex flex-wrap items-center gap-3 text-[11px]">
+            <span class="flex items-center gap-1 text-slate-300">
+              <span class="w-3 h-3 rounded bg-emerald-600 border border-emerald-400"></span> Chạy ép (PROD)
+            </span>
+            <span class="flex items-center gap-1 text-amber-300 font-bold">
+              <span class="w-3.5 h-3.5 rounded-full bg-amber-500/20 border border-amber-400 flex items-center justify-center text-[10px] text-amber-300 font-black">○</span> Thay khuôn (型替)
+            </span>
+            <span class="flex items-center gap-1 text-yellow-300 font-bold">
+              <span class="w-3.5 h-3.5 rounded bg-yellow-500/20 border border-yellow-400 flex items-center justify-center text-[9px] text-yellow-300 font-bold">△</span> Đổi màu (色替)
+            </span>
+            <span class="flex items-center gap-1 text-rose-300">
+              <span class="w-3 h-3 rounded bg-slate-800 border border-rose-500 flex items-center justify-center text-[9px] text-rose-400 font-bold">□</span> Tắt máy tiết kiệm điện (計画停止)
+            </span>
+            <span class="flex items-center gap-1 text-cyan-300 font-mono">
+              [👤 Theo con hàng]
+            </span>
+            <span class="flex items-center gap-1 text-slate-400 font-mono">
+              [⚙️ Theo máy]
+            </span>
+          </div>
+        </div>
+
+        <!-- MỐC GIỜ THAY HÀNG & LỊCH KẾ TIẾP (CHANGEOVER RADAR RIBBON) -->
+        <div id="mold-change-ribbon-container" class="mb-3 p-2.5 rounded-xl bg-slate-950/80 border border-amber-500/30 shadow-inner">
+          <div class="flex items-center justify-between mb-2 px-1">
+            <div class="flex items-center space-x-2">
+              <span class="w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse"></span>
+              <h3 class="text-xs font-bold text-amber-300 uppercase tracking-wide flex items-center gap-1.5">
+                <i class="fa-solid fa-arrows-spin text-amber-400"></i>
+                MỐC GIỜ THAY HÀNG & LỊCH KẾ TIẾP (CHANGEOVER RADAR):
+              </h3>
+              <span id="mold-change-count-badge" class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/20 text-amber-300 border border-amber-400/40 font-mono">0 ca thay</span>
+            </div>
+            <span class="text-[11px] text-slate-400 flex items-center gap-1">
+              <i class="fa-solid fa-hand-pointer text-amber-400/80"></i> Bấm thẻ để định vị máy & xem lịch chạy sau
+            </span>
+          </div>
+          <div id="mold-change-strip" class="flex items-center gap-2 overflow-x-auto pb-1 custom-scrollbar">
+            <!-- Rendered dynamically -->
+          </div>
+        </div>
+
+        <!-- Gantt Board Scroll Container -->
+        <div class="overflow-x-auto rounded-lg border border-slate-800 bg-slate-950/60 max-h-[560px] custom-scrollbar">
+          <div id="gantt-board-root" class="min-w-[1450px]">
+            <!-- Gantt chart is dynamically drawn by app.js -->
+          </div>
+        </div>
+
+        <!-- Ghi chú giao ban (連絡事項) -->
+        <div class="mt-3 p-2.5 rounded-xl bg-slate-800/40 border border-slate-700/60 flex flex-col md:flex-row items-start md:items-center justify-between gap-2 text-xs">
+          <div class="flex items-start space-x-2 text-slate-300">
+            <i class="fa-solid fa-clipboard-list text-amber-400 mt-0.5"></i>
+            <div>
+              <span class="font-bold text-amber-400 uppercase tracking-wide">Ghi Chú Giao Ban (連絡事項):</span>
+              <div id="schedule-notes-container" class="flex flex-wrap gap-x-3 gap-y-1 mt-0.5 text-slate-300">
+                <!-- Rendered dynamically -->
+              </div>
+            </div>
+          </div>
+          <div class="text-[10px] text-slate-500 font-mono whitespace-nowrap">
+            Database: SQLite • File: factory_aps.db
+          </div>
+        </div>
+      </section>
+
+      <!-- TWO-COLUMN BOTTOM: OPERATORS & ROTATION -->
+      <section class="grid grid-cols-1 lg:grid-cols-3 gap-3">
+        <div class="lg:col-span-2 bg-slate-900/90 border border-slate-800 rounded-xl p-3.5 shadow-lg">
+          <div class="flex items-center justify-between mb-2.5 border-b border-slate-800 pb-2">
+            <h3 class="text-xs font-bold text-white uppercase tracking-wide flex items-center gap-2">
+              <i class="fa-solid fa-users text-purple-400"></i> PHÂN CÔNG ĐỨNG MÁY & XOAY TUA NGHỈ NGƠI
+            </h3>
+            <span id="operator-count-badge" class="px-2 py-0.5 bg-slate-800 rounded text-[11px] text-slate-400">16 người trong ca</span>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
+            <div id="operator-list-container" class="space-y-1.5 max-h-[240px] overflow-y-auto pr-1 custom-scrollbar"></div>
+            <div id="break-list-container" class="space-y-2 max-h-[240px] overflow-y-auto pr-1 custom-scrollbar"></div>
+          </div>
+        </div>
+
+        <!-- Right Col: Self-Learning Summary -->
+        <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-3.5 shadow-lg flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between mb-2 border-b border-slate-800 pb-1.5">
+              <h3 class="text-xs font-bold text-white uppercase tracking-wide flex items-center gap-1.5">
+                <i class="fa-solid fa-brain text-amber-400"></i> TỰ HỌC CHỐNG THIẾU HÀNG
+              </h3>
+              <span class="text-[10px] bg-amber-500/10 text-amber-300 border border-amber-500/20 px-2 py-0.5 rounded-full font-mono">Zero Stockout</span>
+            </div>
+            <p class="text-[11px] text-slate-300 leading-relaxed mb-2.5">
+              Dữ liệu phế phẩm & thời gian thay khuôn được lưu vào DB để tự động tăng đệm an toàn, đảm bảo giao hàng 100% không thiếu.
+            </p>
+            <div class="space-y-2 text-xs">
+              <div class="p-2 rounded bg-slate-950 border border-slate-800">
+                <div class="flex justify-between text-slate-300 mb-0.5 text-[11px]">
+                  <span class="text-cyan-300 font-semibold">Đệm an toàn W165:</span>
+                  <span class="font-mono font-bold text-emerald-400">+2.5% (+30 cái)</span>
+                </div>
+                <div class="w-full bg-slate-800 rounded-full h-1"><div class="bg-cyan-500 h-1 rounded-full" style="width: 25%"></div></div>
+              </div>
+              <div class="p-2 rounded bg-slate-950 border border-slate-800">
+                <div class="flex justify-between text-slate-300 mb-0.5 text-[11px]">
+                  <span class="text-purple-300 font-semibold">Đệm an toàn AR-05/06:</span>
+                  <span class="font-mono font-bold text-emerald-400">+4.5% (+14 cái)</span>
+                </div>
+                <div class="w-full bg-slate-800 rounded-full h-1"><div class="bg-purple-500 h-1 rounded-full" style="width: 45%"></div></div>
+              </div>
+            </div>
+          </div>
+          <button onclick="openFeedbackModal()" class="w-full mt-2.5 py-1.5 rounded-lg text-xs font-bold bg-slate-800 hover:bg-slate-700 text-amber-300 border border-amber-500/30 flex items-center justify-center gap-1.5 transition">
+            <i class="fa-solid fa-pen-to-square"></i> Nhập Dữ Liệu Thực Tế Để Huấn Luyện AI
+          </button>
+        </div>
+      </section>
+
+    </div>
+
+    <!-- ============================================================== -->
+    <!-- VIEW 2: SHIPPING ORDERS MANAGEMENT -->
+    <!-- ============================================================== -->
+    <div id="view-orders" class="hidden space-y-4">
+      <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 shadow-xl">
+        <div class="flex items-center justify-between mb-4 border-b border-slate-800 pb-3">
+          <div>
+            <h2 class="text-sm font-bold text-white uppercase tracking-wide flex items-center gap-2">
+              <i class="fa-solid fa-truck-ramp-box text-cyan-400"></i> QUẢN LÝ LỆNH XUẤT HÀNG (SHIPPING ORDERS)
+            </h2>
+            <p class="text-xs text-slate-400">Dữ liệu đơn hàng giao khách hàng (Inoac, Hikari Seimitsu, Denso, Toyota Boshoku...)</p>
+          </div>
+          <button onclick="openAddOrderModal()" class="px-3.5 py-1.5 rounded-lg text-xs font-bold bg-indigo-600 hover:bg-indigo-500 text-white flex items-center gap-1.5 shadow">
+            <i class="fa-solid fa-plus"></i> Tạo Lệnh Xuất Mới
+          </button>
+        </div>
+
+        <div class="overflow-x-auto rounded-lg border border-slate-800">
+          <table class="w-full text-xs text-left text-slate-300">
+            <thead class="bg-slate-950 text-slate-400 uppercase font-semibold border-b border-slate-800">
+              <tr>
+                <th class="p-3">Mã Lệnh</th>
+                <th class="p-3">Khách Hàng</th>
+                <th class="p-3">Con Hàng</th>
+                <th class="p-3 text-right">Số Lượng Đặt</th>
+                <th class="p-3 text-right">Đệm An Toàn (AI)</th>
+                <th class="p-3">Quy Cách Thùng</th>
+                <th class="p-3">Ngày & Giờ Giao</th>
+                <th class="p-3 text-center">Trạng Thái</th>
+              </tr>
+            </thead>
+            <tbody id="orders-table-body" class="divide-y divide-slate-800/60">
+              <!-- Rendered dynamically -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================================== -->
+    <!-- VIEW 3: MACHINES MANAGEMENT (22 MÁY ÉP) -->
+    <!-- ============================================================== -->
+    <div id="view-machines" class="hidden space-y-4">
+      <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 shadow-xl">
+        <div class="flex items-center justify-between mb-4 border-b border-slate-800 pb-3">
+          <div>
+            <h2 class="text-sm font-bold text-white uppercase tracking-wide flex items-center gap-2">
+              <i class="fa-solid fa-industry text-emerald-400"></i> DANH SÁCH 22 MÁY ÉP NHỰA CHUYÊN DỤNG
+            </h2>
+            <p class="text-xs text-slate-400">Khu Bay A (Máy 2-13) & Khu Bay B (Máy 15-25) • Lực kẹp từ 80T đến 350T</p>
+          </div>
+          <span class="text-xs bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-3 py-1 rounded-full font-mono">
+            Tổng cộng: 22 Máy Ép Hoạt Động
+          </span>
+        </div>
+
+        <div id="machines-grid-container" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
+          <!-- Rendered dynamically -->
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================================== -->
+    <!-- VIEW 4: PRODUCTS & BOM MANAGEMENT -->
+    <!-- ============================================================== -->
+    <div id="view-products" class="hidden space-y-4">
+      <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 shadow-xl">
+        <div class="flex items-center justify-between mb-4 border-b border-slate-800 pb-3">
+          <div>
+            <h2 class="text-sm font-bold text-white uppercase tracking-wide flex items-center gap-2">
+              <i class="fa-solid fa-cubes-stacked text-purple-400"></i> DANH MỤC CON HÀNG & ĐỊNH MỨC NGUYÊN VẬT LIỆU (BOM)
+            </h2>
+            <p class="text-xs text-slate-400">28 con hàng trích xuất từ lịch trình 2 ngày làm việc kèm thông số sấy nhựa và máy tương thích</p>
+          </div>
+          <span class="text-xs bg-purple-500/10 text-purple-400 border border-purple-500/20 px-3 py-1 rounded-full font-mono">
+            28 Mã Sản Phẩm Đã Chuẩn Hóa
+          </span>
+        </div>
+
+        <div class="overflow-x-auto rounded-lg border border-slate-800">
+          <table class="w-full text-xs text-left text-slate-300">
+            <thead class="bg-slate-950 text-slate-400 uppercase font-semibold border-b border-slate-800">
+              <tr>
+                <th class="p-3">Mã Hàng</th>
+                <th class="p-3">Tên Chi Tiết</th>
+                <th class="p-3">Hạt Nhựa</th>
+                <th class="p-3">Nhiệt Độ / Giờ Sấy</th>
+                <th class="p-3">Dry Coat</th>
+                <th class="p-3">Quy Cách Thùng</th>
+                <th class="p-3">Cavity & Cycle Time</th>
+                <th class="p-3">Máy Tương Thích</th>
+                <th class="p-3">Chế Độ Đứng Máy</th>
+              </tr>
+            </thead>
+            <tbody id="products-table-body" class="divide-y divide-slate-800/60">
+              <!-- Rendered dynamically -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================================== -->
+    <!-- VIEW 5: OPERATORS MANAGEMENT -->
+    <!-- ============================================================== -->
+    <div id="view-operators" class="hidden space-y-4">
+      <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 shadow-xl">
+        <div class="flex items-center justify-between mb-4 border-b border-slate-800 pb-3">
+          <div>
+            <h2 class="text-sm font-bold text-white uppercase tracking-wide flex items-center gap-2">
+              <i class="fa-solid fa-users-gear text-cyan-400"></i> QUẢN LÝ NHÂN SỰ ĐỨNG MÁY & PHÂN CÔNG CA LÀM VIỆC
+            </h2>
+            <p class="text-xs text-slate-400">Danh sách kỹ thuật viên, công nhân vận hành, người chạy chuyền và trưởng ca</p>
+          </div>
+          <span class="text-xs bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 px-3 py-1 rounded-full font-mono">
+            24 Nhân Sự Trong Hệ Thống
+          </span>
+        </div>
+
+        <div class="overflow-x-auto rounded-lg border border-slate-800">
+          <table class="w-full text-xs text-left text-slate-300">
+            <thead class="bg-slate-950 text-slate-400 uppercase font-semibold border-b border-slate-800">
+              <tr>
+                <th class="p-3">Họ Tên (Katakana / Việt)</th>
+                <th class="p-3">Ca Làm Việc</th>
+                <th class="p-3">Giờ Bắt Đầu - Kết Thúc</th>
+                <th class="p-3">Chế Độ Phân Công</th>
+                <th class="p-3">Chuyên Trách Hàng / Máy</th>
+                <th class="p-3">Tay Nghề</th>
+                <th class="p-3 text-center">Người Chạy Chuyền (Relief)</th>
+              </tr>
+            </thead>
+            <tbody id="operators-table-body" class="divide-y divide-slate-800/60">
+              <!-- Rendered dynamically -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================================== -->
+    <!-- VIEW 6: DEDICATED DATABASE EXPLORER & AI LEARNING LOGS -->
+    <!-- ============================================================== -->
+    <div id="view-database" class="hidden space-y-4">
+      <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 shadow-xl space-y-4">
+        
+        <div class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-800 pb-3">
+          <div>
+            <h2 class="text-sm font-bold text-white uppercase tracking-wide flex items-center gap-2">
+              <i class="fa-solid fa-server text-cyan-400"></i> CƠ SỞ DỮ LIỆU QUAN HỆ CHUYÊN DỤNG (SQLITE PERSISTENT DATABASE)
+            </h2>
+            <p class="text-xs text-slate-400">Lưu trữ vĩnh viễn toàn bộ bảng biểu, lịch trình 2 ngày, phân công nhân lực và nhật ký tự học</p>
+          </div>
+          <div class="flex items-center space-x-2">
+            <button onclick="reseedDatabase()" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-rose-900/60 hover:bg-rose-800 text-rose-200 border border-rose-700/50 flex items-center gap-1.5">
+              <i class="fa-solid fa-rotate"></i> Nạp Lại Dữ Liệu Gốc (Reset DB)
+            </button>
+            <button onclick="refreshDbStats()" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-800 hover:bg-slate-700 text-slate-200 flex items-center gap-1.5">
+              <i class="fa-solid fa-arrows-rotate"></i> Làm Mới Thống Kê
+            </button>
+          </div>
+        </div>
+
+        <!-- DB Metrics Cards -->
+        <div id="db-metrics-container" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3">
+          <!-- Rendered dynamically -->
+        </div>
+
+        <!-- Learning Logs Table -->
+        <div class="space-y-2 pt-2">
+          <h3 class="text-xs font-bold text-amber-400 uppercase tracking-wide flex items-center gap-2">
+            <i class="fa-solid fa-graduation-cap"></i> NHẬT KÝ HỌC MÁY ĐỆM AN TOÀN (LEARNING FEEDBACK LOGS)
+          </h3>
+          <p class="text-[11px] text-slate-400">Mỗi khi có báo cáo phế phẩm hoặc sai lệch chu kỳ, AI cập nhật đệm an toàn vào bảng ghi này để lần sau không bao giờ thiếu hàng.</p>
+          
+          <div class="overflow-x-auto rounded-lg border border-slate-800">
+            <table class="w-full text-xs text-left text-slate-300">
+              <thead class="bg-slate-950 text-slate-400 uppercase font-semibold border-b border-slate-800">
+                <tr>
+                  <th class="p-2.5">Thời Gian</th>
+                  <th class="p-2.5">Mã Hàng</th>
+                  <th class="p-2.5">Máy</th>
+                  <th class="p-2.5 text-right">Phế Phẩm</th>
+                  <th class="p-2.5 text-right">Giờ Chạy Thực</th>
+                  <th class="p-2.5 text-right">Đệm Cũ → Mới</th>
+                  <th class="p-2.5">Ghi Chú AI</th>
+                </tr>
+              </thead>
+              <tbody id="feedback-logs-body" class="divide-y divide-slate-800/60">
+                <!-- Rendered dynamically -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ============================================================== -->
+    <!-- VIEW 7: COMPREHENSIVE ADMIN CONTROL PORTAL -->
+    <!-- ============================================================== -->
+    <div id="view-admin" class="hidden space-y-4">
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-2xl space-y-5">
+        
+        <!-- Top Admin Header -->
+        <div class="flex flex-wrap items-center justify-between gap-4 border-b border-slate-800 pb-4">
+          <div class="flex items-center space-x-3">
+            <div class="w-12 h-12 rounded-xl bg-gradient-to-tr from-amber-500 via-orange-500 to-amber-600 flex items-center justify-center shadow-lg shadow-amber-500/20 text-white text-2xl">
+              <i class="fa-solid fa-user-shield"></i>
+            </div>
+            <div>
+              <div class="flex items-center space-x-2">
+                <h2 class="text-base font-bold text-white uppercase tracking-wide">
+                  TRUNG TÂM QUẢN TRỊ TOÀN DIỆN (APS ADMIN PORTAL)
+                </h2>
+                <span class="px-2 py-0.5 text-[11px] font-mono font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30 rounded-full flex items-center gap-1">
+                  <i class="fa-solid fa-lock-open text-amber-400"></i> Full Admin Control
+                </span>
+              </div>
+              <p class="text-xs text-slate-400 mt-0.5">
+                Quản lý toàn bộ thông tin: 22 Máy ép, Danh mục BOM, Lịch điều phối 24H, Nhân sự ca kíp & Lệnh xuất hàng
+              </p>
+            </div>
+          </div>
+
+          <!-- Quick Action Buttons -->
+          <div class="flex flex-wrap items-center gap-2">
+            <button onclick="openAddJobModal()" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-indigo-600 hover:bg-indigo-500 text-white flex items-center gap-1.5 shadow transition">
+              <i class="fa-solid fa-calendar-plus"></i> + Thêm Job Lịch Trình
+            </button>
+            <button onclick="openAddMachineModal()" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-600 hover:bg-emerald-500 text-white flex items-center gap-1.5 shadow transition">
+              <i class="fa-solid fa-industry"></i> + Thêm Máy Ép
+            </button>
+            <button onclick="openAddProductModal()" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-purple-600 hover:bg-purple-500 text-white flex items-center gap-1.5 shadow transition">
+              <i class="fa-solid fa-cubes"></i> + Thêm Con Hàng & BOM
+            </button>
+            <button onclick="openAddOperatorModal()" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-cyan-600 hover:bg-cyan-500 text-white flex items-center gap-1.5 shadow transition">
+              <i class="fa-solid fa-user-plus"></i> + Thêm Nhân Sự
+            </button>
+            <a href="/api/db/download" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-800 hover:bg-slate-700 text-amber-300 border border-slate-700 flex items-center gap-1.5 shadow transition" title="Tải file SQLite về máy tính để sao lưu">
+              <i class="fa-solid fa-download"></i> Sao Lưu DB (.db)
+            </a>
+          </div>
+        </div>
+
+        <!-- Sub-Nav Segmented Tabs -->
+        <div class="flex flex-wrap items-center gap-1.5 bg-slate-950 p-1.5 rounded-xl border border-slate-800 text-xs font-semibold">
+          <button onclick="switchAdminTab('jobs')" id="admin-nav-jobs" class="px-3.5 py-1.5 rounded-lg bg-amber-500 text-slate-950 font-bold shadow flex items-center gap-1.5 transition">
+            <i class="fa-solid fa-chart-gantt"></i> 1. Điều Phối Lịch Sản Xuất (Jobs)
+          </button>
+          <button onclick="switchAdminTab('machines')" id="admin-nav-machines" class="px-3.5 py-1.5 rounded-lg text-slate-400 hover:text-white flex items-center gap-1.5 transition">
+            <i class="fa-solid fa-industry"></i> 2. 22 Máy Ép
+          </button>
+          <button onclick="switchAdminTab('products')" id="admin-nav-products" class="px-3.5 py-1.5 rounded-lg text-slate-400 hover:text-white flex items-center gap-1.5 transition">
+            <i class="fa-solid fa-cubes-stacked"></i> 3. Hàng & Định Mức BOM
+          </button>
+          <button onclick="switchAdminTab('operators')" id="admin-nav-operators" class="px-3.5 py-1.5 rounded-lg text-slate-400 hover:text-white flex items-center gap-1.5 transition">
+            <i class="fa-solid fa-users-gear"></i> 4. Nhân Sự & Ca Kíp
+          </button>
+          <button onclick="switchAdminTab('orders')" id="admin-nav-orders" class="px-3.5 py-1.5 rounded-lg text-slate-400 hover:text-white flex items-center gap-1.5 transition">
+            <i class="fa-solid fa-truck-ramp-box"></i> 5. Lệnh Xuất Hàng
+          </button>
+          <button onclick="switchAdminTab('materials')" id="admin-nav-materials" class="px-3.5 py-1.5 rounded-lg text-slate-400 hover:text-white flex items-center gap-1.5 transition">
+            <i class="fa-solid fa-flask-vial"></i> 6. Hạt Nhựa & Thùng
+          </button>
+        </div>
+
+        <!-- ============================================== -->
+        <!-- TAB 1: JOBS & SCHEDULE MANAGER -->
+        <!-- ============================================== -->
+        <div id="admin-section-jobs" class="space-y-3">
+          <div class="flex flex-wrap items-center justify-between gap-3 bg-slate-950/60 p-3 rounded-xl border border-slate-800">
+            <div class="flex flex-wrap items-center gap-3">
+              <div class="flex items-center space-x-2">
+                <span class="text-xs text-slate-400 font-semibold">Chọn Ngày Lịch:</span>
+                <select id="admin-job-date-select" onchange="onAdminJobDateChange(this.value)" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white font-semibold">
+                  <option value="2026-11-12">11月12日 木 (Thứ 5)</option>
+                  <option value="2026-11-13">11月13日 金 (Thứ 6)</option>
+                  <option value="optimized">AI Tối Ưu Ca Kế Tiếp (optimized)</option>
+                </select>
+              </div>
+
+              <div class="flex items-center space-x-2">
+                <span class="text-xs text-slate-400 font-semibold">Lọc Máy:</span>
+                <select id="admin-job-machine-filter" onchange="renderAdminJobsTable()" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white">
+                  <option value="">Tất Cả 22 Máy Ép</option>
+                </select>
+              </div>
+
+              <div class="flex items-center space-x-2">
+                <span class="text-xs text-slate-400 font-semibold">Sự Kiện:</span>
+                <select id="admin-job-event-filter" onchange="renderAdminJobsTable()" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white">
+                  <option value="">Tất Cả Sự Kiện</option>
+                  <option value="PROD">Chạy ép (PROD)</option>
+                  <option value="MOLD_CHANGE">Thay khuôn (○ 型替)</option>
+                  <option value="COLOR_CHANGE">Đổi màu (△ 色替)</option>
+                  <option value="STOP">Tắt máy (□ 計画停止)</option>
+                </select>
+              </div>
+            </div>
+
+            <button onclick="openAddJobModal()" class="px-3.5 py-1.5 rounded-lg text-xs font-bold bg-indigo-600 hover:bg-indigo-500 text-white flex items-center gap-1.5 shadow">
+              <i class="fa-solid fa-plus"></i> Thêm Công Việc Mới
+            </button>
+          </div>
+
+          <div class="overflow-x-auto rounded-xl border border-slate-800 max-h-[500px] custom-scrollbar">
+            <table class="w-full text-xs text-left text-slate-300">
+              <thead class="bg-slate-950 text-slate-400 uppercase font-semibold border-b border-slate-800 sticky top-0 z-20">
+                <tr>
+                  <th class="p-3">Máy</th>
+                  <th class="p-3">Sự Kiện</th>
+                  <th class="p-3">Con Hàng</th>
+                  <th class="p-3">Khung Giờ</th>
+                  <th class="p-3 text-right">Thời Lượng</th>
+                  <th class="p-3 text-right">SL Kế Hoạch</th>
+                  <th class="p-3">Thợ Phụ Trách</th>
+                  <th class="p-3 text-center">Hành Động</th>
+                </tr>
+              </thead>
+              <tbody id="admin-jobs-tbody" class="divide-y divide-slate-800/60">
+                <!-- Rendered dynamically -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- ============================================== -->
+        <!-- TAB 2: MACHINES MANAGER -->
+        <!-- ============================================== -->
+        <div id="admin-section-machines" class="hidden space-y-3">
+          <div class="flex flex-wrap items-center justify-between gap-3 bg-slate-950/60 p-3 rounded-xl border border-slate-800">
+            <div>
+              <p class="text-xs text-slate-300 font-semibold">Danh mục 22 Máy Ép Nhựa (Bay A: 2-13号機 • Bay B: 15-25号機)</p>
+              <p class="text-[11px] text-slate-500">Chỉnh sửa lực kẹp tấn, khu vực, trạng thái hoạt động hoặc thêm máy mới</p>
+            </div>
+            <button onclick="openAddMachineModal()" class="px-3.5 py-1.5 rounded-lg text-xs font-bold bg-emerald-600 hover:bg-emerald-500 text-white flex items-center gap-1.5 shadow">
+              <i class="fa-solid fa-plus"></i> Thêm Máy Ép Mới
+            </button>
+          </div>
+
+          <div class="overflow-x-auto rounded-xl border border-slate-800">
+            <table class="w-full text-xs text-left text-slate-300">
+              <thead class="bg-slate-950 text-slate-400 uppercase font-semibold border-b border-slate-800">
+                <tr>
+                  <th class="p-3">Mã Máy</th>
+                  <th class="p-3 text-right">Lực Kẹp (Tấn)</th>
+                  <th class="p-3">Khu Vực (Bay)</th>
+                  <th class="p-3">Đời Máy</th>
+                  <th class="p-3 text-right">Công Suất Điện (kW)</th>
+                  <th class="p-3">Trạng Thái</th>
+                  <th class="p-3 text-center">Hành Động</th>
+                </tr>
+              </thead>
+              <tbody id="admin-machines-tbody" class="divide-y divide-slate-800/60">
+                <!-- Rendered dynamically -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- ============================================== -->
+        <!-- TAB 3: PRODUCTS & BOM MANAGER -->
+        <!-- ============================================== -->
+        <div id="admin-section-products" class="hidden space-y-3">
+          <div class="flex flex-wrap items-center justify-between gap-3 bg-slate-950/60 p-3 rounded-xl border border-slate-800">
+            <div>
+              <p class="text-xs text-slate-300 font-semibold">Danh Mục Con Hàng & Định Mức BOM (Nguyên Liệu, Sấy, Thùng, Cavity)</p>
+              <p class="text-[11px] text-slate-500">Quản lý toàn bộ 28 con hàng trích xuất từ ca làm việc</p>
+            </div>
+            <button onclick="openAddProductModal()" class="px-3.5 py-1.5 rounded-lg text-xs font-bold bg-purple-600 hover:bg-purple-500 text-white flex items-center gap-1.5 shadow">
+              <i class="fa-solid fa-plus"></i> Thêm Con Hàng Mới
+            </button>
+          </div>
+
+          <div class="overflow-x-auto rounded-xl border border-slate-800 max-h-[500px] custom-scrollbar">
+            <table class="w-full text-xs text-left text-slate-300">
+              <thead class="bg-slate-950 text-slate-400 uppercase font-semibold border-b border-slate-800 sticky top-0 z-20">
+                <tr>
+                  <th class="p-3">Mã Hàng</th>
+                  <th class="p-3">Tên Chi Tiết</th>
+                  <th class="p-3">Hạt Nhựa</th>
+                  <th class="p-3">Nhiệt & Giờ Sấy</th>
+                  <th class="p-3">Quy Cách Thùng</th>
+                  <th class="p-3">Cavity • Cycle</th>
+                  <th class="p-3">Chế Độ Thợ</th>
+                  <th class="p-3 text-right">Đệm AI</th>
+                  <th class="p-3">Máy Tương Thích</th>
+                  <th class="p-3 text-center">Hành Động</th>
+                </tr>
+              </thead>
+              <tbody id="admin-products-tbody" class="divide-y divide-slate-800/60">
+                <!-- Rendered dynamically -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- ============================================== -->
+        <!-- TAB 4: OPERATORS MANAGER -->
+        <!-- ============================================== -->
+        <div id="admin-section-operators" class="hidden space-y-3">
+          <div class="flex flex-wrap items-center justify-between gap-3 bg-slate-950/60 p-3 rounded-xl border border-slate-800">
+            <div>
+              <p class="text-xs text-slate-300 font-semibold">Danh Sách Nhân Sự & Phân Công Ca Kíp</p>
+              <p class="text-[11px] text-slate-500">24 nhân viên đứng máy, kỹ thuật setup khuôn (宮地, 川端), người chạy chuyền (Relief)</p>
+            </div>
+            <button onclick="openAddOperatorModal()" class="px-3.5 py-1.5 rounded-lg text-xs font-bold bg-cyan-600 hover:bg-cyan-500 text-white flex items-center gap-1.5 shadow">
+              <i class="fa-solid fa-plus"></i> Thêm Nhân Sự Mới
+            </button>
+          </div>
+
+          <div class="overflow-x-auto rounded-xl border border-slate-800">
+            <table class="w-full text-xs text-left text-slate-300">
+              <thead class="bg-slate-950 text-slate-400 uppercase font-semibold border-b border-slate-800">
+                <tr>
+                  <th class="p-3">Họ Tên</th>
+                  <th class="p-3">Ca Làm Việc</th>
+                  <th class="p-3">Giờ Vào - Tan Ca</th>
+                  <th class="p-3">Chế Độ</th>
+                  <th class="p-3">Gán Hàng / Máy</th>
+                  <th class="p-3">Tay Nghề</th>
+                  <th class="p-3 text-center">Chạy Chuyền</th>
+                  <th class="p-3 text-center">Hành Động</th>
+                </tr>
+              </thead>
+              <tbody id="admin-operators-tbody" class="divide-y divide-slate-800/60">
+                <!-- Rendered dynamically -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- ============================================== -->
+        <!-- TAB 5: ORDERS MANAGER -->
+        <!-- ============================================== -->
+        <div id="admin-section-orders" class="hidden space-y-3">
+          <div class="flex flex-wrap items-center justify-between gap-3 bg-slate-950/60 p-3 rounded-xl border border-slate-800">
+            <div>
+              <p class="text-xs text-slate-300 font-semibold">Lệnh Xuất Hàng Khách Hàng (Shipping Orders)</p>
+              <p class="text-[11px] text-slate-500">Đơn hàng Inoac, Denso, Toyota Boshoku... và đệm an toàn tự học chống thiếu hàng</p>
+            </div>
+            <button onclick="openAddOrderModal()" class="px-3.5 py-1.5 rounded-lg text-xs font-bold bg-indigo-600 hover:bg-indigo-500 text-white flex items-center gap-1.5 shadow">
+              <i class="fa-solid fa-plus"></i> Tạo Lệnh Xuất Mới
+            </button>
+          </div>
+
+          <div class="overflow-x-auto rounded-xl border border-slate-800">
+            <table class="w-full text-xs text-left text-slate-300">
+              <thead class="bg-slate-950 text-slate-400 uppercase font-semibold border-b border-slate-800">
+                <tr>
+                  <th class="p-3">Mã Lệnh</th>
+                  <th class="p-3">Khách Hàng</th>
+                  <th class="p-3">Con Hàng</th>
+                  <th class="p-3 text-right">Số Lượng Đặt</th>
+                  <th class="p-3">Hạn Giao Hàng</th>
+                  <th class="p-3">Quy Cách Thùng</th>
+                  <th class="p-3 text-center">Trạng Thái</th>
+                  <th class="p-3 text-center">Hành Động</th>
+                </tr>
+              </thead>
+              <tbody id="admin-orders-tbody" class="divide-y divide-slate-800/60">
+                <!-- Rendered dynamically -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- ============================================== -->
+        <!-- TAB 6: MATERIALS & PACKAGING BOXES -->
+        <!-- ============================================== -->
+        <div id="admin-section-materials" class="hidden space-y-4">
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            
+            <!-- Materials Card -->
+            <div class="bg-slate-950 border border-slate-800 rounded-xl p-3.5 space-y-3">
+              <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+                <h4 class="text-xs font-bold text-amber-400 uppercase flex items-center gap-1.5">
+                  <i class="fa-solid fa-fire-burner"></i> Danh Mục Hạt Nhựa & Nhiệt Sấy
+                </h4>
+                <button onclick="openAddMaterialModal()" class="px-2.5 py-1 rounded bg-amber-600 hover:bg-amber-500 text-white text-[11px] font-bold">
+                  + Thêm Hạt Nhựa
+                </button>
+              </div>
+              <div class="overflow-x-auto max-h-[380px] custom-scrollbar">
+                <table class="w-full text-xs text-left text-slate-300">
+                  <thead class="bg-slate-900 text-slate-400 text-[11px] sticky top-0">
+                    <tr>
+                      <th class="p-2">Mã / Loại Nhựa</th>
+                      <th class="p-2">Tên Nhựa</th>
+                      <th class="p-2">Màu Sắc</th>
+                      <th class="p-2">Sấy (°C / h)</th>
+                      <th class="p-2">Dry Coat</th>
+                      <th class="p-2 text-center">Xóa</th>
+                    </tr>
+                  </thead>
+                  <tbody id="admin-materials-tbody" class="divide-y divide-slate-800/50">
+                    <!-- Rendered dynamically -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- Boxes Card -->
+            <div class="bg-slate-950 border border-slate-800 rounded-xl p-3.5 space-y-3">
+              <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+                <h4 class="text-xs font-bold text-purple-400 uppercase flex items-center gap-1.5">
+                  <i class="fa-solid fa-box-open"></i> Quy Cách Thùng Bao Bì & Đóng Gói
+                </h4>
+                <button onclick="openAddBoxModal()" class="px-2.5 py-1 rounded bg-purple-600 hover:bg-purple-500 text-white text-[11px] font-bold">
+                  + Thêm Thùng
+                </button>
+              </div>
+              <div class="overflow-x-auto max-h-[380px] custom-scrollbar">
+                <table class="w-full text-xs text-left text-slate-300">
+                  <thead class="bg-slate-900 text-slate-400 text-[11px] sticky top-0">
+                    <tr>
+                      <th class="p-2">Mã Thùng</th>
+                      <th class="p-2">Tên Quy Cách</th>
+                      <th class="p-2 text-right">Cái / Thùng</th>
+                      <th class="p-2 text-right">Xuất Trước (h)</th>
+                      <th class="p-2 text-right">Tồn Kho</th>
+                      <th class="p-2 text-center">Xóa</th>
+                    </tr>
+                  </thead>
+                  <tbody id="admin-boxes-tbody" class="divide-y divide-slate-800/50">
+                    <!-- Rendered dynamically -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </main>
+
+  <!-- MODAL: ADD SHIPPING ORDER -->
+  <div id="add-order-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
+    <div class="bg-slate-900 border border-slate-700 rounded-2xl max-w-md w-full p-5 shadow-2xl space-y-4">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+        <h3 class="text-sm font-bold text-white uppercase flex items-center gap-2">
+          <i class="fa-solid fa-plus text-indigo-400"></i> Tạo Lệnh Xuất Hàng Mới
+        </h3>
+        <button onclick="closeModal('add-order-modal')" class="text-slate-400 hover:text-white">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <form id="add-order-form" onsubmit="submitNewOrder(event)" class="space-y-3 text-xs">
+        <div>
+          <label class="block font-semibold text-slate-300 mb-1">Khách Hàng:</label>
+          <input type="text" id="order-customer" value="Inoac Corporation" required class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-slate-200">
+        </div>
+        <div>
+          <label class="block font-semibold text-slate-300 mb-1">Sản Phẩm (Con Hàng):</label>
+          <select id="order-product" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-slate-200">
+            <option value="W165">W165 - Nắp ốp vỏ điện tử</option>
+            <option value="154">154 - Khay tản nhiệt</option>
+            <option value="048-04">048-04 - Cánh quạt せんぷうき</option>
+            <option value="21-61/62">21-61/62 - Thân vỏ cảm biến</option>
+            <option value="AR-05/06">AR-05/06 - Tay vịn ô tô</option>
+            <option value="075F/JV">075F/JV - Van định lượng Inoac</option>
+          </select>
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-semibold text-slate-300 mb-1">Số Lượng Cái:</label>
+            <input type="number" id="order-qty" value="500" min="10" required class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-slate-200">
+          </div>
+          <div>
+            <label class="block font-semibold text-slate-300 mb-1">Giờ Xuất Deadline:</label>
+            <input type="number" id="order-deadline" value="16.0" step="0.5" min="7" max="31" required class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-slate-200">
+          </div>
+        </div>
+        <div>
+          <label class="block font-semibold text-slate-300 mb-1">Ngày Xuất Hàng:</label>
+          <input type="date" id="order-date" value="2026-11-14" required class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-slate-200">
+        </div>
+
+        <div class="flex justify-end space-x-2 pt-2 border-t border-slate-800">
+          <button type="button" onclick="closeModal('add-order-modal')" class="px-4 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300">
+            Hủy
+          </button>
+          <button type="submit" class="px-4 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-bold shadow">
+            Lưu Vào Database
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ============================================================== -->
+  <!-- ADMIN MODAL 1: ADD / EDIT JOB (CÔNG VIỆC LỊCH TRÌNH) -->
+  <!-- ============================================================== -->
+  <div id="admin-job-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
+    <div class="bg-slate-900 border border-slate-700 rounded-2xl max-w-lg w-full p-5 shadow-2xl space-y-4">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+        <h3 id="admin-job-modal-title" class="text-sm font-bold text-white uppercase flex items-center gap-2">
+          <i class="fa-solid fa-calendar-plus text-indigo-400"></i> Thêm / Chỉnh Sửa Công Việc Sản Xuất
+        </h3>
+        <button onclick="closeModal('admin-job-modal')" class="text-slate-400 hover:text-white">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <form id="admin-job-form" onsubmit="submitAdminJob(event)" class="space-y-3 text-xs">
+        <input type="hidden" id="ajob-id">
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-semibold text-slate-300 mb-1">Lịch Ngày:</label>
+            <select id="ajob-schedule-id" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-slate-200">
+              <option value="2026-11-12">11月12日 木 (Thứ 5)</option>
+              <option value="2026-11-13">11月13日 金 (Thứ 6)</option>
+              <option value="optimized">AI Tối Ưu Ca Kế Tiếp (optimized)</option>
+            </select>
+          </div>
+          <div>
+            <label class="block font-semibold text-slate-300 mb-1">Máy Ép:</label>
+            <select id="ajob-machine" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-slate-200">
+              <!-- Dynamically populated -->
+            </select>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-semibold text-slate-300 mb-1">Loại Sự Kiện:</label>
+            <select id="ajob-event" onchange="onJobEventChange(this.value)" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-slate-200 font-bold">
+              <option value="PROD" class="text-emerald-400">Chạy ép (PROD)</option>
+              <option value="MOLD_CHANGE" class="text-amber-400">Thay khuôn (○ 型替)</option>
+              <option value="COLOR_CHANGE" class="text-yellow-400">Đổi màu (△ 色替)</option>
+              <option value="STOP" class="text-rose-400">Tắt máy tiết kiệm điện (□ 計画停止)</option>
+            </select>
+          </div>
+          <div>
+            <label class="block font-semibold text-slate-300 mb-1">Con Hàng (Mã Sản Phẩm):</label>
+            <select id="ajob-product" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-slate-200">
+              <!-- Dynamically populated -->
+            </select>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-3 gap-3">
+          <div>
+            <label class="block font-semibold text-slate-300 mb-1">Giờ Bắt Đầu:</label>
+            <input type="number" id="ajob-start" step="0.5" min="7.0" max="31.0" value="7.0" required class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-slate-200 font-mono">
+          </div>
+          <div>
+            <label class="block font-semibold text-slate-300 mb-1">Giờ Kết Thúc:</label>
+            <input type="number" id="ajob-end" step="0.5" min="7.0" max="31.0" value="14.0" required class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-slate-200 font-mono">
+          </div>
+          <div>
+            <label class="block font-semibold text-slate-300 mb-1">SL Kế Hoạch (Cái):</label>
+            <input type="number" id="ajob-qty" value="0" min="0" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-slate-200 font-mono">
+          </div>
+        </div>
+
+        <div>
+          <label class="block font-semibold text-slate-300 mb-1">Người Đứng Máy / Setup Khuôn:</label>
+          <select id="ajob-op" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-slate-200">
+            <option value="">(Không gán / Tắt máy)</option>
+            <!-- Dynamically populated -->
+          </select>
+        </div>
+
+        <div class="flex justify-end space-x-2 pt-2 border-t border-slate-800">
+          <button type="button" onclick="closeModal('admin-job-modal')" class="px-4 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300">
+            Hủy
+          </button>
+          <button type="submit" class="px-4 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-bold shadow">
+            Lưu Vào Database SQLite
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ============================================================== -->
+  <!-- ADMIN MODAL 2: ADD / EDIT MACHINE -->
+  <!-- ============================================================== -->
+  <div id="admin-machine-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
+    <div class="bg-slate-900 border border-slate-700 rounded-2xl max-w-md w-full p-5 shadow-2xl space-y-4">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+        <h3 id="admin-machine-modal-title" class="text-sm font-bold text-white uppercase flex items-center gap-2">
+          <i class="fa-solid fa-industry text-emerald-400"></i> Thêm / Sửa Máy Ép
+        </h3>
+        <button onclick="closeModal('admin-machine-modal')" class="text-slate-400 hover:text-white">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <form id="admin-machine-form" onsubmit="submitAdminMachine(event)" class="space-y-3 text-xs">
+        <div>
+          <label class="block font-semibold text-slate-300 mb-1">Mã Máy (ID):</label>
+          <input type="text" id="amach-id" placeholder="VD: 26号機" required class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-slate-200 font-bold">
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-semibold text-slate-300 mb-1">Lực Kẹp (Tấn):</label>
+            <input type="number" id="amach-tonnage" value="110" min="20" max="1000" required class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-slate-200">
+          </div>
+          <div>
+            <label class="block font-semibold text-slate-300 mb-1">Khu Vực (Bay):</label>
+            <select id="amach-bay" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-slate-200">
+              <option value="A">Khu Bay A (Máy 2-13)</option>
+              <option value="B">Khu Bay B (Máy 15-25)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-semibold text-slate-300 mb-1">Công Suất Điện (kW):</label>
+            <input type="number" id="amach-power" value="22.0" step="0.5" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-slate-200">
+          </div>
+          <div>
+            <label class="block font-semibold text-slate-300 mb-1">Trạng Thái:</label>
+            <select id="amach-status" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-slate-200">
+              <option value="PLANNED_STOP">Dừng máy (PLANNED_STOP)</option>
+              <option value="RUNNING">Đang chạy (RUNNING)</option>
+              <option value="SETUP_MOLD">Thay khuôn (SETUP_MOLD)</option>
+              <option value="SETUP_COLOR">Đổi màu (SETUP_COLOR)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="flex items-center space-x-2 pt-1">
+          <input type="checkbox" id="amach-is-new" class="accent-indigo-500 rounded cursor-pointer">
+          <label for="amach-is-new" class="text-slate-300 cursor-pointer">Máy mới đời tân tiến (新号機)</label>
+        </div>
+
+        <div class="flex justify-end space-x-2 pt-2 border-t border-slate-800">
+          <button type="button" onclick="closeModal('admin-machine-modal')" class="px-4 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300">
+            Hủy
+          </button>
+          <button type="submit" class="px-4 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold shadow">
+            Lưu Máy Ép
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ============================================================== -->
+  <!-- ADMIN MODAL 3: ADD / EDIT PRODUCT & BOM -->
+  <!-- ============================================================== -->
+  <div id="admin-product-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
+    <div class="bg-slate-900 border border-slate-700 rounded-2xl max-w-xl w-full p-5 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto custom-scrollbar">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+        <h3 id="admin-product-modal-title" class="text-sm font-bold text-white uppercase flex items-center gap-2">
+          <i class="fa-solid fa-cubes text-purple-400"></i> Thêm / Chỉnh Sửa Con Hàng & Định Mức BOM
+        </h3>
+        <button onclick="closeModal('admin-product-modal')" class="text-slate-400 hover:text-white">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <form id="admin-product-form" onsubmit="submitAdminProduct(event)" class="space-y-3 text-xs">
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-semibold text-slate-300 mb-1">Mã Con Hàng (Code):</label>
+            <input type="text" id="aprod-code" placeholder="VD: W165" required class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-slate-200 font-mono font-bold">
+          </div>
+          <div>
+            <label class="block font-semibold text-slate-300 mb-1">Tên Chi Tiết Sản Phẩm:</label>
+            <input type="text" id="aprod-name" placeholder="VD: Nắp ốp vỏ điện tử" required class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-slate-200">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-semibold text-slate-300 mb-1">Hạt Nhựa (Material BOM):</label>
+            <select id="aprod-material" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-slate-200">
+              <!-- Dynamically populated -->
+            </select>
+          </div>
+          <div>
+            <label class="block font-semibold text-slate-300 mb-1">Quy Cách Thùng Đóng Gói (Box BOM):</label>
+            <select id="aprod-box" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-slate-200">
+              <!-- Dynamically populated -->
+            </select>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-3 gap-3">
+          <div>
+            <label class="block font-semibold text-slate-300 mb-1">Chu Kỳ Ép (giây):</label>
+            <input type="number" id="aprod-cycle" value="38.0" step="0.5" min="5" required class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-slate-200">
+          </div>
+          <div>
+            <label class="block font-semibold text-slate-300 mb-1">Số Cavity Khuôn:</label>
+            <input type="number" id="aprod-cavity" value="2" min="1" max="64" required class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-slate-200">
+          </div>
+          <div>
+            <label class="block font-semibold text-slate-300 mb-1">Đệm Bù Hao Hụt (%):</label>
+            <input type="number" id="aprod-buffer" value="3.0" step="0.5" min="0" max="20" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-slate-200">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-semibold text-slate-300 mb-1">Chế Độ Thợ Đứng Máy:</label>
+            <select id="aprod-mode" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-slate-200">
+              <option value="BY_MACHINE">Theo máy (BY_MACHINE)</option>
+              <option value="BY_PRODUCT">Theo con hàng chuyên trách (BY_PRODUCT)</option>
+            </select>
+          </div>
+          <div>
+            <label class="block font-semibold text-slate-300 mb-1">Thợ Chuyên Trách (Nếu có):</label>
+            <select id="aprod-dedicated-op" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-slate-200">
+              <option value="">(Không chỉ định)</option>
+              <!-- Dynamically populated -->
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label class="block font-semibold text-slate-300 mb-1">Danh Sách Máy Tương Thích:</label>
+          <div id="aprod-machines-container" class="grid grid-cols-4 sm:grid-cols-6 gap-1.5 p-2 bg-slate-950 border border-slate-800 rounded-lg max-h-32 overflow-y-auto custom-scrollbar">
+            <!-- Dynamically populated checkboxes -->
+          </div>
+        </div>
+
+        <div class="flex justify-end space-x-2 pt-2 border-t border-slate-800">
+          <button type="button" onclick="closeModal('admin-product-modal')" class="px-4 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300">
+            Hủy
+          </button>
+          <button type="submit" class="px-4 py-1.5 rounded-lg bg-purple-600 hover:bg-purple-500 text-white font-bold shadow">
+            Lưu Con Hàng & BOM
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ============================================================== -->
+  <!-- ADMIN MODAL 4: ADD / EDIT OPERATOR -->
+  <!-- ============================================================== -->
+  <div id="admin-operator-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
+    <div class="bg-slate-900 border border-slate-700 rounded-2xl max-w-md w-full p-5 shadow-2xl space-y-4">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+        <h3 id="admin-operator-modal-title" class="text-sm font-bold text-white uppercase flex items-center gap-2">
+          <i class="fa-solid fa-user-plus text-cyan-400"></i> Thêm / Sửa Nhân Sự Đứng Máy
+        </h3>
+        <button onclick="closeModal('admin-operator-modal')" class="text-slate-400 hover:text-white">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <form id="admin-operator-form" onsubmit="submitAdminOperator(event)" class="space-y-3 text-xs">
+        <input type="hidden" id="aop-id">
+
+        <div>
+          <label class="block font-semibold text-slate-300 mb-1">Họ Tên (Katakana / Việt):</label>
+          <input type="text" id="aop-name" placeholder="VD: クアン (Quang)" required class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-slate-200 font-bold">
+        </div>
+
+        <div class="grid grid-cols-3 gap-3">
+          <div>
+            <label class="block font-semibold text-slate-300 mb-1">Ca Làm Việc:</label>
+            <select id="aop-shift" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-slate-200">
+              <option value="DAY">Ca Ngày (DAY)</option>
+              <option value="DAY_OT">Tăng Ca (DAY_OT)</option>
+              <option value="NIGHT">Ca Đêm (NIGHT)</option>
+              <option value="PART_TIME">Bán Thời Gian</option>
+            </select>
+          </div>
+          <div>
+            <label class="block font-semibold text-slate-300 mb-1">Giờ Bắt Đầu:</label>
+            <input type="number" id="aop-start" value="8.0" step="0.5" min="7.0" max="31.0" required class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-slate-200">
+          </div>
+          <div>
+            <label class="block font-semibold text-slate-300 mb-1">Giờ Kết Thúc:</label>
+            <input type="number" id="aop-end" value="17.0" step="0.5" min="7.0" max="31.0" required class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-slate-200">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-semibold text-slate-300 mb-1">Chế Độ Phân Công:</label>
+            <select id="aop-mode" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-slate-200">
+              <option value="BY_MACHINE">Trông máy (BY_MACHINE)</option>
+              <option value="BY_PRODUCT">Theo con hàng (BY_PRODUCT)</option>
+            </select>
+          </div>
+          <div>
+            <label class="block font-semibold text-slate-300 mb-1">Bậc Tay Nghề:</label>
+            <select id="aop-skill" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-slate-200">
+              <option value="1">Bậc 1 (Phụ việc)</option>
+              <option value="2" selected>Bậc 2 (Đứng máy chính)</option>
+              <option value="3">Bậc 3 (Trưởng ca / Setup khuôn)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-semibold text-slate-300 mb-1">Máy Chỉ Định (Cố định):</label>
+            <select id="aop-assigned-mach" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-slate-200">
+              <option value="">(Không cố định)</option>
+              <!-- Dynamically populated -->
+            </select>
+          </div>
+          <div>
+            <label class="block font-semibold text-slate-300 mb-1">Con Hàng Chỉ Định:</label>
+            <select id="aop-assigned-prod" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-slate-200">
+              <option value="">(Không cố định)</option>
+              <!-- Dynamically populated -->
+            </select>
+          </div>
+        </div>
+
+        <div class="flex items-center space-x-2 pt-1">
+          <input type="checkbox" id="aop-relief" class="accent-amber-500 rounded cursor-pointer">
+          <label for="aop-relief" class="text-slate-300 cursor-pointer font-semibold text-amber-300">Là người chạy chuyền (Relief - Thay ca ăn trưa/nghỉ ngơi)</label>
+        </div>
+
+        <div class="flex justify-end space-x-2 pt-2 border-t border-slate-800">
+          <button type="button" onclick="closeModal('admin-operator-modal')" class="px-4 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300">
+            Hủy
+          </button>
+          <button type="submit" class="px-4 py-1.5 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-white font-bold shadow">
+            Lưu Nhân Sự
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ============================================================== -->
+  <!-- ADMIN MODAL 5: ADD / EDIT MATERIAL -->
+  <!-- ============================================================== -->
+  <div id="admin-material-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
+    <div class="bg-slate-900 border border-slate-700 rounded-2xl max-w-md w-full p-5 shadow-2xl space-y-4">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+        <h3 class="text-sm font-bold text-white uppercase flex items-center gap-2">
+          <i class="fa-solid fa-fire-burner text-amber-400"></i> Thêm Hạt Nhựa Mới
+        </h3>
+        <button onclick="closeModal('admin-material-modal')" class="text-slate-400 hover:text-white">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <form id="admin-material-form" onsubmit="submitAdminMaterial(event)" class="space-y-3 text-xs">
+        <div>
+          <label class="block font-semibold text-slate-300 mb-1">Mã Loại Hạt Nhựa (ID):</label>
+          <input type="text" id="amat-id" placeholder="VD: PA6-V0" required class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-slate-200 font-bold">
+        </div>
+        <div>
+          <label class="block font-semibold text-slate-300 mb-1">Tên Hạt Nhựa:</label>
+          <input type="text" id="amat-name" placeholder="VD: PA6 Chống cháy V0" required class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-slate-200">
+        </div>
+        <div class="grid grid-cols-3 gap-3">
+          <div>
+            <label class="block font-semibold text-slate-300 mb-1">Màu Sắc:</label>
+            <input type="text" id="amat-color" value="Black" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-slate-200">
+          </div>
+          <div>
+            <label class="block font-semibold text-slate-300 mb-1">Nhiệt Sấy (°C):</label>
+            <input type="number" id="amat-temp" value="80" min="40" max="150" required class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-slate-200 font-mono">
+          </div>
+          <div>
+            <label class="block font-semibold text-slate-300 mb-1">Giờ Sấy (h):</label>
+            <input type="number" id="amat-hours" value="3.0" step="0.5" min="1" max="12" required class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-slate-200 font-mono">
+          </div>
+        </div>
+        <div class="flex items-center space-x-2 pt-1">
+          <input type="checkbox" id="amat-drycoat" class="accent-blue-500 rounded cursor-pointer">
+          <label for="amat-drycoat" class="text-blue-300 font-bold cursor-pointer">Cờ Dry-Coat (青○ - Cần sấy phủ khô)</label>
+        </div>
+
+        <div class="flex justify-end space-x-2 pt-2 border-t border-slate-800">
+          <button type="button" onclick="closeModal('admin-material-modal')" class="px-4 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300">
+            Hủy
+          </button>
+          <button type="submit" class="px-4 py-1.5 rounded-lg bg-amber-600 hover:bg-amber-500 text-white font-bold shadow">
+            Lưu Hạt Nhựa
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ============================================================== -->
+  <!-- ADMIN MODAL 6: ADD / EDIT PACKAGING BOX -->
+  <!-- ============================================================== -->
+  <div id="admin-box-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
+    <div class="bg-slate-900 border border-slate-700 rounded-2xl max-w-md w-full p-5 shadow-2xl space-y-4">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+        <h3 class="text-sm font-bold text-white uppercase flex items-center gap-2">
+          <i class="fa-solid fa-box-open text-purple-400"></i> Thêm Quy Cách Thùng Mới
+        </h3>
+        <button onclick="closeModal('admin-box-modal')" class="text-slate-400 hover:text-white">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <form id="admin-box-form" onsubmit="submitAdminBox(event)" class="space-y-3 text-xs">
+        <div>
+          <label class="block font-semibold text-slate-300 mb-1">Mã Quy Cách Thùng (ID):</label>
+          <input type="text" id="abox-id" placeholder="VD: THUNG-CARTON-200" required class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-slate-200 font-bold">
+        </div>
+        <div>
+          <label class="block font-semibold text-slate-300 mb-1">Tên Quy Cách Thùng:</label>
+          <input type="text" id="abox-name" placeholder="VD: Thùng carton tiêu chuẩn 200 cái" required class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-slate-200">
+        </div>
+        <div class="grid grid-cols-3 gap-3">
+          <div>
+            <label class="block font-semibold text-slate-300 mb-1">Số Cái / Thùng:</label>
+            <input type="number" id="abox-pcs" value="100" min="1" required class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-slate-200 font-mono">
+          </div>
+          <div>
+            <label class="block font-semibold text-slate-300 mb-1">Xuất Trước (h):</label>
+            <input type="number" id="abox-staging" value="1.0" step="0.5" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-slate-200 font-mono">
+          </div>
+          <div>
+            <label class="block font-semibold text-slate-300 mb-1">Tồn Kho (Thùng):</label>
+            <input type="number" id="abox-inv" value="500" min="0" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-slate-200 font-mono">
+          </div>
+        </div>
+
+        <div class="flex justify-end space-x-2 pt-2 border-t border-slate-800">
+          <button type="button" onclick="closeModal('admin-box-modal')" class="px-4 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300">
+            Hủy
+          </button>
+          <button type="submit" class="px-4 py-1.5 rounded-lg bg-purple-600 hover:bg-purple-500 text-white font-bold shadow">
+            Lưu Quy Cách Thùng
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- FLOATING TOAST CONTAINER -->
+  <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col space-y-2 pointer-events-none"></div>
+
+  <!-- MODAL: JOB & 3 PREREQUISITES DETAILS -->
+  <div id="job-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
+    <div class="bg-slate-900 border border-slate-700 rounded-2xl max-w-xl w-full p-5 shadow-2xl space-y-4">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+        <div class="flex items-center space-x-2.5">
+          <span id="modal-badge-type" class="px-2.5 py-1 rounded-md text-xs font-bold bg-indigo-600 text-white">PROD</span>
+          <h3 id="modal-title" class="text-base font-bold text-white">Chi Tiết Lô Sản Xuất</h3>
+        </div>
+        <button onclick="closeModal('job-modal')" class="text-slate-400 hover:text-white text-lg">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
+        <!-- 1. Material -->
+        <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 space-y-1.5">
+          <div class="flex items-center space-x-1.5 text-amber-400 font-bold">
+            <i class="fa-solid fa-fire-burner"></i><span>1. SẤY NGUYÊN LIỆU</span>
+          </div>
+          <p id="modal-mat-resin" class="font-semibold text-slate-200">-</p>
+          <p id="modal-mat-temp" class="text-slate-400">-</p>
+          <div id="modal-mat-status" class="mt-2 text-[11px] px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-medium">Đã sấy xong</div>
+        </div>
+
+        <!-- 2. Box -->
+        <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 space-y-1.5">
+          <div class="flex items-center space-x-1.5 text-purple-400 font-bold">
+            <i class="fa-solid fa-box-open"></i><span>2. THÙNG ĐÓNG GÓI</span>
+          </div>
+          <p id="modal-box-name" class="font-semibold text-slate-200">-</p>
+          <p id="modal-box-pcs" class="text-slate-400">-</p>
+          <div id="modal-box-status" class="mt-2 text-[11px] px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-medium">Đã xuất ra line</div>
+        </div>
+
+        <!-- 3. Operator -->
+        <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 space-y-1.5">
+          <div class="flex items-center space-x-1.5 text-cyan-400 font-bold">
+            <i class="fa-solid fa-user-check"></i><span>3. NGƯỜI ĐỨNG MÁY</span>
+          </div>
+          <p id="modal-op-name" class="font-semibold text-slate-200">-</p>
+          <p id="modal-op-mode" class="text-slate-400">-</p>
+          <div id="modal-op-status" class="mt-2 text-[11px] px-2 py-0.5 rounded bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 font-medium">Sẵn sàng</div>
+        </div>
+      </div>
+
+      <div id="modal-job-details" class="p-3 rounded-xl bg-slate-950/80 border border-slate-800 text-xs text-slate-300 space-y-1 font-mono"></div>
+
+      <div class="flex justify-end pt-2">
+        <button onclick="closeModal('job-modal')" class="px-4 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold">
+          Đóng
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: MACHINE LEARNING FEEDBACK INPUT -->
+  <div id="feedback-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
+    <div class="bg-slate-900 border border-slate-700 rounded-2xl max-w-lg w-full p-5 shadow-2xl space-y-4">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+        <div class="flex items-center space-x-2">
+          <i class="fa-solid fa-graduation-cap text-amber-400 text-lg"></i>
+          <h3 class="text-base font-bold text-white">Nhập Dữ Liệu Thực Tế Để Huấn Luyện AI</h3>
+        </div>
+        <button onclick="closeModal('feedback-modal')" class="text-slate-400 hover:text-white text-lg">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <p class="text-xs text-slate-400">
+        AI sẽ ghi nhận số phế phẩm và thời gian chạy thực tế vào Cơ sở dữ liệu SQLite để tự động tăng đệm an toàn, đảm bảo ca sau <strong>không bao giờ thiếu hàng</strong>!
+      </p>
+
+      <form id="feedback-form" onsubmit="submitFeedback(event)" class="space-y-3 text-xs">
+        <div>
+          <label class="block font-semibold text-slate-300 mb-1">Mã Sản Phẩm (Con Hàng):</label>
+          <select id="fb-product" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-slate-200">
+            <option value="W165">W165 - Nắp ốp vỏ điện tử</option>
+            <option value="154">154 - Khay tản nhiệt</option>
+            <option value="048-04">048-04 - Cánh quạt せんぷうき</option>
+            <option value="21-61/62">21-61/62 - Thân vỏ cảm biến</option>
+            <option value="AR-05/06">AR-05/06 - Tay vịn ô tô</option>
+            <option value="075F/JV">075F/JV - Van định lượng Inoac</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block font-semibold text-slate-300 mb-1">Máy Đang Chạy:</label>
+          <select id="fb-machine" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-slate-200">
+            <option value="15号機">15号機 (110T)</option>
+            <option value="16号機">16号機 (110T)</option>
+            <option value="21号機">21号機 (220T)</option>
+            <option value="25号機">25号機 (350T)</option>
+            <option value="7号機">7号機 (150T)</option>
+          </select>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-semibold text-slate-300 mb-1">Số Lượng Phế Phẩm (Scraps):</label>
+            <input type="number" id="fb-scraps" value="12" min="0" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-slate-200">
+          </div>
+          <div>
+            <label class="block font-semibold text-slate-300 mb-1">Thời Gian Chạy Thực Tế (Giờ):</label>
+            <input type="number" id="fb-actual-hours" value="8.8" step="0.1" min="0" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-slate-200">
+          </div>
+        </div>
+
+        <div class="flex justify-end space-x-2 pt-2 border-t border-slate-800">
+          <button type="button" onclick="closeModal('feedback-modal')" class="px-4 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300">
+            Hủy
+          </button>
+          <button type="submit" class="px-4 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-bold shadow">
+            Cập Nhật Vào SQLite & Huấn Luyện AI
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <footer class="bg-slate-950 border-t border-slate-900 py-3 text-center text-xs text-slate-500">
+    Hệ thống Điều hành Thông minh APS • Dedicated SQLite Database Engine • 22 Máy Ép Nhựa • Sấy Nhựa - Thùng - Nhân Lực
+  </footer>
+
+  <script src="/app.js"></script>
+</body>
+</html>

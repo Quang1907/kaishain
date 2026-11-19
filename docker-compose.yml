@@ -1,0 +1,58 @@
+# ====================================================================
+# ENTERPRISE DOCKER COMPOSE CONFIGURATION FOR FACTORY APS SYSTEM
+# Hệ thống Triển khai Container Doanh nghiệp: PostgreSQL 16 + APS Server
+# ====================================================================
+version: '3.8'
+
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: factory_aps_postgres
+    restart: always
+    environment:
+      POSTGRES_DB: factory_aps
+      POSTGRES_USER: factory_admin
+      POSTGRES_PASSWORD: factory_secure_password_2026
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./backend/database/postgres_schema.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U factory_admin -d factory_aps"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - aps_net
+
+  aps_server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: factory_aps_brain
+    restart: always
+    environment:
+      PORT: 8080
+      DB_BACKEND: postgres
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_NAME: factory_aps
+      DB_USER: factory_admin
+      DB_PASSWORD: factory_secure_password_2026
+      DATABASE_URL: postgresql://factory_admin:factory_secure_password_2026@db:5432/factory_aps
+    ports:
+      - "8080:8080"
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - aps_net
+
+volumes:
+  pgdata:
+    driver: local
+
+networks:
+  aps_net:
+    driver: bridge
