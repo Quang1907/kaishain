@@ -1,5 +1,4 @@
 import React from "react";
-import { Cpu, RefreshCw, Zap } from "lucide-react";
 import {
   Cpu,
   RefreshCw,
@@ -20,7 +19,6 @@ interface HeaderProps {
 }
 
 export const Header: React.FC<HeaderProps> = ({ onRefresh, isRefreshing }) => {
-  const { currentDate, setDate } = useAppStore();
   const {
     currentDate,
     setDate,
@@ -68,7 +66,6 @@ export const Header: React.FC<HeaderProps> = ({ onRefresh, isRefreshing }) => {
   const roleInfo = getRoleBadge();
 
   return (
-    <header className="h-16 px-6 flex items-center justify-between border-b border-factory-border/60">
     <header className="h-16 px-6 flex items-center justify-between border-b border-factory-border/60 bg-factory-card/30 backdrop-blur">
       {/* Brand & Factory Title */}
       <div className="flex items-center gap-3">
@@ -81,18 +78,15 @@ export const Header: React.FC<HeaderProps> = ({ onRefresh, isRefreshing }) => {
               APS BRAIN 2.0
             </h1>
             <span className="px-1.5 py-0.2 rounded text-[10px] font-bold bg-blue-500/20 text-blue-400 border border-blue-500/30">
-              VITE • REACT
               POSTGRESQL 18 • RBAC
             </span>
           </div>
           <p className="text-xs text-slate-400">
-            Hệ Thống Lập Lịch & Điều Hành Nhà Máy Ép Nhựa Chính Xác
             Hệ Thống Lập Lịch & Phân Quyền Xưởng Ép Nhựa 22 Máy
           </p>
         </div>
       </div>
 
-      {/* Date Switcher & Actions */}
       {/* Date Switcher & User Profile */}
       <div className="flex items-center gap-3">
         {/* Date Selector */}
@@ -194,3 +188,4 @@ export const Header: React.FC<HeaderProps> = ({ onRefresh, isRefreshing }) => {
     </header>
   );
 };
+export default Header;
