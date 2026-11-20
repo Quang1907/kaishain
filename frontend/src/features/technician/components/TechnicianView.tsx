@@ -75,35 +75,35 @@ export const TechnicianView: React.FC = () => {
   };
 
   return (
-    <div className="p-6 space-y-6 max-w-7xl mx-auto">
+    <div className="p-3 sm:p-6 space-y-4 sm:space-y-6 max-w-7xl mx-auto">
       {/* Top Banner & Profile */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-5 rounded-2xl bg-gradient-to-r from-amber-950/40 via-factory-panel to-slate-900 border border-amber-500/30">
-        <div className="flex items-center gap-3.5">
-          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center text-white shadow-lg shadow-amber-500/20">
-            <Wrench className="w-6 h-6" />
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-amber-950/40 via-factory-panel to-slate-900 border border-amber-500/30">
+        <div className="flex items-center gap-2.5 sm:gap-3.5">
+          <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center text-white shadow-lg shadow-amber-500/20 shrink-0">
+            <Wrench className="w-5 h-5 sm:w-6 sm:h-6" />
           </div>
           <div>
-            <div className="flex items-center gap-2">
-              <h2 className="text-lg font-bold text-white tracking-wide">
-                PHÂN HỆ THỢ MÁY: QUẢN LÝ & NGHIỆM THU THAY KHUÔN (○ 型替)
+            <div className="flex items-center gap-1.5 sm:gap-2">
+              <h2 className="text-sm sm:text-lg font-bold text-white tracking-wide">
+                PHÂN HỆ THỢ MÁY: THAY KHUÔN (○ 型替)
               </h2>
               <Badge variant="warning">THỢ MÁY</Badge>
             </div>
-            <p className="text-xs text-slate-400 mt-0.5">
-              Người phụ trách: <strong className="text-amber-400">{currentUser?.full_name || "宮地 (Miyaji) - Kỹ thuật trưởng"}</strong> • Kiểm soát an toàn 4 bước trước khi cho máy chạy
+            <p className="text-[11px] sm:text-xs text-slate-400 mt-0.5 line-clamp-1 sm:line-clamp-none">
+              Phụ trách: <strong className="text-amber-400">{currentUser?.full_name || "宮地 (Miyaji) - Kỹ thuật trưởng"}</strong> • Kiểm soát an toàn 4 bước
             </p>
           </div>
         </div>
 
         {/* Stats Summary */}
-        <div className="flex items-center gap-3">
-          <div className="px-3.5 py-2 rounded-xl bg-factory-card border border-factory-border text-center min-w-[100px]">
-            <div className="text-[11px] text-slate-400 uppercase font-semibold">Chờ nghiệm thu</div>
-            <div className="text-xl font-extrabold text-amber-400 font-mono">{pendingCount}</div>
+        <div className="w-full sm:w-auto grid grid-cols-2 sm:flex items-center gap-2 sm:gap-3">
+          <div className="px-3 py-2 rounded-xl bg-factory-card border border-factory-border text-center min-w-0 sm:min-w-[100px]">
+            <div className="text-[10px] sm:text-[11px] text-slate-400 uppercase font-semibold">Chờ nghiệm thu</div>
+            <div className="text-lg sm:text-xl font-extrabold text-amber-400 font-mono">{pendingCount}</div>
           </div>
-          <div className="px-3.5 py-2 rounded-xl bg-factory-card border border-factory-border text-center min-w-[100px]">
-            <div className="text-[11px] text-slate-400 uppercase font-semibold">Đã hoàn tất</div>
-            <div className="text-xl font-extrabold text-emerald-400 font-mono">{completedCount}</div>
+          <div className="px-3 py-2 rounded-xl bg-factory-card border border-factory-border text-center min-w-0 sm:min-w-[100px]">
+            <div className="text-[10px] sm:text-[11px] text-slate-400 uppercase font-semibold">Đã hoàn tất</div>
+            <div className="text-lg sm:text-xl font-extrabold text-emerald-400 font-mono">{completedCount}</div>
           </div>
         </div>
       </div>

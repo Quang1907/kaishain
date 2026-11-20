@@ -97,72 +97,72 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
   return (
     <div className="min-h-screen flex flex-col bg-factory-bg text-slate-100">
       {/* Dedicated Admin Header */}
-      <header className="h-16 px-6 flex items-center justify-between border-b border-blue-500/30 bg-factory-card/50 backdrop-blur sticky top-0 z-40">
-        <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center shadow-lg shadow-blue-500/25">
-            <Shield className="text-white w-5 h-5" />
+      <header className="h-auto min-h-16 py-2 sm:py-0 px-3 sm:px-6 flex flex-wrap items-center justify-between border-b border-blue-500/30 bg-factory-card/50 backdrop-blur sticky top-0 z-40 gap-2 sm:gap-3">
+        <div className="flex items-center gap-2.5 sm:gap-3">
+          <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center shadow-lg shadow-blue-500/25 shrink-0">
+            <Shield className="text-white w-4 h-4 sm:w-5 sm:h-5" />
           </div>
           <div>
-            <div className="flex items-center gap-2">
-              <h1 className="font-extrabold text-base tracking-wider text-white uppercase font-mono">
-                CỔNG QUẢN LÝ XƯỞNG ÉP NHỰA
+            <div className="flex items-center gap-1.5 sm:gap-2">
+              <h1 className="font-extrabold text-sm sm:text-base tracking-wider text-white uppercase font-mono">
+                CỔNG QUẢN LÝ XƯỞNG
               </h1>
-              <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-blue-500/20 text-blue-400 border border-blue-500/40 font-mono">
-                URL: /admin
+              <span className="hidden sm:inline-block px-1.5 py-0.5 rounded text-[10px] font-bold bg-blue-500/20 text-blue-400 border border-blue-500/40 font-mono">
+                /admin
               </span>
             </div>
-            <p className="text-xs text-slate-400">
+            <p className="hidden md:block text-xs text-slate-400">
               Quản trị viên: <strong className="text-blue-300">{currentUser?.full_name || "川端 (Kawabata)"}</strong> • Toàn quyền điều hành xưởng
             </p>
           </div>
         </div>
 
         {/* Action Controls & Navigation */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 sm:gap-3 flex-wrap justify-end">
           {/* Nút Xem Lịch Xưởng (Trang Chủ) */}
           <Button
             variant="secondary"
             size="sm"
             onClick={() => onNavigateUrl("/")}
             title="Quay về trang chủ xem Lịch Trình Toàn Xưởng 24H"
-            className="h-8 px-3 text-cyan-400 border-cyan-500/30 hover:bg-cyan-500/10 flex items-center gap-1.5"
+            className="h-7 sm:h-8 px-2 sm:px-3 text-cyan-400 border-cyan-500/30 hover:bg-cyan-500/10 flex items-center gap-1.5 text-xs"
           >
-            <CalendarDays size={14} />
-            <span className="text-xs font-semibold">Xem Lịch Xưởng (Trang Chủ)</span>
+            <CalendarDays size={13} />
+            <span>Lịch Xưởng</span>
           </Button>
 
           {/* Date Switcher */}
-          <div className="flex bg-factory-card border border-factory-border rounded-lg p-1 text-xs font-medium">
+          <div className="flex bg-factory-card border border-factory-border rounded-lg p-0.5 sm:p-1 text-xs font-medium">
             <button
               onClick={() => setDate("2026-11-12")}
-              className={`px-3 py-1.5 rounded-md transition-all ${
+              className={`px-2 sm:px-3 py-1 sm:py-1.5 rounded-md transition-all text-[11px] sm:text-xs ${
                 currentDate === "2026-11-12"
                   ? "bg-blue-600 text-white shadow font-semibold"
                   : "text-slate-400 hover:text-white"
               }`}
             >
-              11/12 (Thứ 5)
+              11/12 <span className="hidden sm:inline">(T5)</span>
             </button>
             <button
               onClick={() => setDate("2026-11-13")}
-              className={`px-3 py-1.5 rounded-md transition-all ${
+              className={`px-2 sm:px-3 py-1 sm:py-1.5 rounded-md transition-all text-[11px] sm:text-xs ${
                 currentDate === "2026-11-13"
                   ? "bg-blue-600 text-white shadow font-semibold"
                   : "text-slate-400 hover:text-white"
               }`}
             >
-              11/13 (Thứ 6)
+              11/13 <span className="hidden sm:inline">(T6)</span>
             </button>
             <button
               onClick={() => setDate("optimized")}
-              className={`px-3 py-1.5 rounded-md flex items-center gap-1 transition-all ${
+              className={`px-2 sm:px-3 py-1 sm:py-1.5 rounded-md flex items-center gap-1 transition-all text-[11px] sm:text-xs ${
                 currentDate === "optimized"
                   ? "bg-amber-600 text-white shadow font-semibold"
                   : "text-amber-400 hover:text-amber-300"
               }`}
             >
-              <Zap size={13} />
-              AI Tối Ưu
+              <Zap size={12} />
+              <span>AI<span className="hidden sm:inline"> Tối Ưu</span></span>
             </button>
           </div>
 
@@ -172,14 +172,15 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
               size="sm"
               onClick={onRefresh}
               isLoading={isRefreshing}
-              className="h-8"
+              className="h-7 sm:h-8 px-2 sm:px-2.5 text-xs"
+              title="Đồng bộ DB"
             >
-              <RefreshCw size={14} className={isRefreshing ? "animate-spin" : ""} />
-              Đồng bộ DB
+              <RefreshCw size={13} className={isRefreshing ? "animate-spin" : ""} />
+              <span className="hidden sm:inline">Đồng bộ</span>
             </Button>
           )}
 
-          <div className="h-6 w-px bg-factory-border/60 mx-1" />
+          <div className="hidden sm:block h-5 w-px bg-factory-border/60" />
 
           {/* Quick jump to field portals */}
           <div className="hidden xl:flex items-center gap-1 bg-factory-panel border border-factory-border p-1 rounded-lg text-[11px]">
@@ -212,16 +213,16 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
             size="sm"
             onClick={handleLogout}
             title="Đăng xuất khỏi Cổng Quản Lý"
-            className="h-8 px-2.5 text-slate-400 hover:text-red-400 hover:border-red-500/40"
+            className="h-7 sm:h-8 px-2 sm:px-2.5 text-slate-400 hover:text-red-400 hover:border-red-500/40 text-xs"
           >
-            <LogOut size={14} />
-            <span className="hidden sm:inline text-xs">Đăng Xuất</span>
+            <LogOut size={13} />
+            <span className="hidden sm:inline">Đăng Xuất</span>
           </Button>
         </div>
       </header>
 
       {/* Dedicated Admin Sub-Navigation Bar */}
-      <nav className="flex items-center gap-1 px-6 py-2 bg-factory-panel border-b border-factory-border/60 overflow-x-auto scrollbar-none">
+      <nav className="flex items-center gap-1 px-3 sm:px-6 py-1.5 sm:py-2 bg-factory-panel border-b border-factory-border/60 overflow-x-auto scrollbar-none touch-pan-x">
         {navItems.map((item) => {
           const Icon = item.icon;
           const isActive = activeTab === item.key;
@@ -243,7 +244,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
       </nav>
 
       {/* Main Admin Work Area */}
-      <main className="flex-1 p-6 overflow-y-auto">
+      <main className="flex-1 p-3 sm:p-6 overflow-y-auto">
         <div className="max-w-[1600px] mx-auto">{renderContent()}</div>
       </main>
     </div>

@@ -136,53 +136,53 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onNavigateUrl }) => {
   };
 
   return (
-    <div className="min-h-screen bg-[#080C14] flex flex-col justify-center items-center p-4 selection:bg-blue-600 selection:text-white">
+    <div className="min-h-screen bg-[#080C14] flex flex-col justify-center items-center p-3 sm:p-6 selection:bg-blue-600 selection:text-white">
       {/* Background radial glow */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
         <div className="absolute -top-[30%] left-[20%] w-[600px] h-[600px] bg-blue-600/10 rounded-full blur-[140px]" />
         <div className="absolute -bottom-[20%] right-[20%] w-[500px] h-[500px] bg-purple-600/10 rounded-full blur-[140px]" />
       </div>
 
-      <div className="w-full max-w-4xl relative z-10 space-y-8 my-8">
+      <div className="w-full max-w-4xl relative z-10 space-y-6 sm:space-y-8 my-4 sm:my-8">
         {/* Nút quay lại Lịch Trình Trang Chủ */}
         <div className="flex justify-start">
           <Button
             variant="secondary"
             size="sm"
             onClick={() => onNavigateUrl("/")}
-            className="text-cyan-400 border-cyan-500/30 hover:bg-cyan-500/10 flex items-center gap-1.5 shadow-md"
+            className="text-cyan-400 border-cyan-500/30 hover:bg-cyan-500/10 flex items-center gap-1.5 shadow-md text-xs py-1.5 px-2.5 sm:px-3"
           >
-            <ArrowLeft size={14} />
-            <CalendarDays size={14} />
-            <span>Quay Lại Bảng Lịch Xưởng (Trang Chủ Không Cần Đăng Nhập)</span>
+            <ArrowLeft size={13} />
+            <CalendarDays size={13} />
+            <span>Quay Lại Lịch Xưởng <span className="hidden sm:inline">(Trang Chủ)</span></span>
           </Button>
         </div>
 
         {/* Branding & Header */}
-        <div className="text-center space-y-3">
-          <div className="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full bg-blue-500/10 border border-blue-500/30 text-blue-400 text-xs font-semibold uppercase tracking-wider font-mono">
-            <Cpu size={14} />
-            <span>APS BRAIN 2.0 • POSTGRESQL 18 SERVER</span>
+        <div className="text-center space-y-2 sm:space-y-3">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/30 text-blue-400 text-[11px] sm:text-xs font-semibold uppercase tracking-wider font-mono">
+            <Cpu size={13} />
+            <span>APS BRAIN 2.0 • POSTGRESQL 18</span>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-wide font-sans">
-            HỆ THỐNG ĐIỀU HÀNH &amp; PHÂN QUYỀN NHÀ MÁY ÉP NHỰA
+          <h1 className="text-xl sm:text-2xl md:text-3xl font-extrabold text-white tracking-wide font-sans">
+            ĐIỀU HÀNH &amp; PHÂN QUYỀN NHÀ MÁY ÉP NHỰA
           </h1>
-          <p className="text-xs sm:text-sm text-slate-400 max-w-xl mx-auto">
-            Giao diện được phân chia độc lập theo từng vai trò nghiệp vụ thực tế với đường dẫn (URL) và phân quyền bảo mật riêng biệt.
+          <p className="text-xs sm:text-sm text-slate-400 max-w-xl mx-auto px-2">
+            Giao diện phân chia độc lập theo từng vai trò nghiệp vụ với đường dẫn (URL) và bảo mật chuyên biệt.
           </p>
         </div>
 
         {/* 4 One-Click Role Portals */}
         <div className="space-y-3">
           <div className="flex items-center justify-between text-xs text-slate-400 font-semibold uppercase tracking-wider px-1">
-            <span className="flex items-center gap-1.5 text-cyan-400">
+            <span className="flex items-center gap-1.5 text-cyan-400 text-[11px] sm:text-xs">
               <UserCheck size={14} />
-              Chọn cổng truy cập theo vai trò (1-Chạm):
+              Cổng vai trò (1-Chạm):
             </span>
-            <span className="text-[11px] text-slate-500">Tự động chuyển tới URL riêng</span>
+            <span className="text-[10px] sm:text-[11px] text-slate-500">Chuyển URL riêng</span>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-3.5">
             {DEMO_ROLES.map((item) => {
               const Icon = item.icon;
               return (

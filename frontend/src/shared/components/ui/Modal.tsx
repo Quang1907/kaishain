@@ -42,25 +42,31 @@ export const Modal: React.FC<ModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-in fade-in duration-150">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/75 backdrop-blur-sm animate-in fade-in duration-150 overflow-y-auto">
       <div
         className={cn(
-          "w-full bg-factory-panel border border-factory-border rounded-2xl shadow-2xl overflow-hidden",
+          "w-full bg-factory-panel border border-factory-border rounded-2xl shadow-2xl overflow-hidden max-h-[92vh] flex flex-col my-auto",
           maxWidthClasses[maxWidth]
         )}
       >
-        <div className="flex items-center justify-between px-6 py-4 border-b border-factory-border bg-factory-card/50">
-          <h3 className="text-lg font-bold text-white tracking-wide">{title}</h3>
+        {/* Modal Header */}
+        <div className="px-4 sm:px-6 py-3.5 sm:py-4 border-b border-factory-border flex items-center justify-between bg-factory-card/60 shrink-0">
+          <h3 className="font-bold text-sm sm:text-base text-white truncate pr-2">{title}</h3>
           <button
             onClick={onClose}
-            className="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+            className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors shrink-0"
           >
-            <X size={20} />
+            <X size={18} />
           </button>
         </div>
-        <div className="p-6 max-h-[80vh] overflow-y-auto">{children}</div>
+
+        {/* Modal Body (Scrollable on small devices) */}
+        <div className="p-4 sm:p-6 overflow-y-auto flex-1 scrollbar-thin">
+          {children}
+        </div>
       </div>
     </div>
   );
 };
 
+export default Modal;

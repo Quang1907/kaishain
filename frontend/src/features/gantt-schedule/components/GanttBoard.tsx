@@ -67,25 +67,26 @@ export const GanttBoard: React.FC<GanttBoardProps> = ({ schedule, isLoading = fa
       )}
 
       {/* Gantt Filter & Action Toolbar */}
-      <div className="px-6 py-3.5 border-b border-factory-border bg-factory-panel/90 flex flex-wrap items-center justify-between gap-4">
-        <div className="flex items-center gap-3">
+      <div className="px-3 sm:px-6 py-2.5 sm:py-3.5 border-b border-factory-border bg-factory-panel/90 flex flex-wrap items-center justify-between gap-2 sm:gap-4">
+        <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
           <span className="text-xs font-bold uppercase text-slate-400 flex items-center gap-1.5">
-            <Filter size={14} className="text-blue-400" /> Phân Vùng:
+            <Filter size={14} className="text-blue-400" />
+            <span className="hidden sm:inline">Phân Vùng:</span>
           </span>
-          <div className="flex bg-slate-950 border border-factory-border rounded-lg p-1 text-xs">
+          <div className="flex bg-slate-950 border border-factory-border rounded-lg p-0.5 sm:p-1 text-xs">
             <button
               onClick={() => setBayFilter("ALL")}
-              className={`px-3 py-1.5 rounded-md font-medium transition-all ${
+              className={`px-2 sm:px-3 py-1 sm:py-1.5 rounded-md font-medium transition-all text-[11px] sm:text-xs ${
                 bayFilter === "ALL"
                   ? "bg-blue-600 text-white shadow font-semibold"
                   : "text-slate-400 hover:text-white"
               }`}
             >
-              Toàn Bộ ({machines.length} Máy)
+              Toàn Bộ <span className="hidden sm:inline">({machines.length} Máy)</span>
             </button>
             <button
               onClick={() => setBayFilter("BAY_A")}
-              className={`px-3 py-1.5 rounded-md font-medium transition-all ${
+              className={`px-2 sm:px-3 py-1 sm:py-1.5 rounded-md font-medium transition-all text-[11px] sm:text-xs ${
                 bayFilter === "BAY_A"
                   ? "bg-blue-600 text-white shadow font-semibold"
                   : "text-slate-400 hover:text-white"
@@ -95,7 +96,7 @@ export const GanttBoard: React.FC<GanttBoardProps> = ({ schedule, isLoading = fa
             </button>
             <button
               onClick={() => setBayFilter("BAY_B")}
-              className={`px-3 py-1.5 rounded-md font-medium transition-all ${
+              className={`px-2 sm:px-3 py-1 sm:py-1.5 rounded-md font-medium transition-all text-[11px] sm:text-xs ${
                 bayFilter === "BAY_B"
                   ? "bg-blue-600 text-white shadow font-semibold"
                   : "text-slate-400 hover:text-white"
@@ -105,14 +106,14 @@ export const GanttBoard: React.FC<GanttBoardProps> = ({ schedule, isLoading = fa
             </button>
           </div>
 
-          <div className="text-xs text-slate-400 flex items-center gap-1.5 font-mono ml-2">
+          <div className="text-[11px] sm:text-xs text-slate-400 flex items-center gap-1.5 font-mono">
             <Database size={13} className="text-emerald-400" />
-            <span>DB Jobs: <strong className="text-white">{schedule?.jobs?.length || 0}</strong> khối</span>
+            <span><strong className="text-white">{schedule?.jobs?.length || 0}</strong> khối</span>
           </div>
         </div>
 
         {/* Legend & Add Job Button */}
-        <div className="flex items-center gap-4 text-xs">
+        <div className="flex items-center gap-2 sm:gap-4 text-xs flex-wrap">
           <div className="hidden lg:flex items-center gap-4">
             <div className="flex items-center gap-1.5">
               <span className="w-3 h-3 rounded bg-gradient-to-r from-emerald-600 to-teal-500"></span>
@@ -136,20 +137,20 @@ export const GanttBoard: React.FC<GanttBoardProps> = ({ schedule, isLoading = fa
             variant="primary"
             size="sm"
             onClick={() => setIsCreateModalOpen(true)}
-            className="gap-1.5 h-8 shadow-sm"
+            className="gap-1.5 h-7 sm:h-8 px-2.5 sm:px-3 text-xs shadow-sm"
           >
-            <Plus size={14} />
-            <span>Thêm Lệnh Ép Vào DB</span>
+            <Plus size={13} />
+            <span>Thêm Lệnh</span>
           </Button>
         </div>
       </div>
 
-      {/* Main Gantt Grid Scroll Container */}
-      <div className="overflow-x-auto relative">
-        <div className="min-w-[1200px]">
+      {/* Main Gantt Grid Scroll Container with Touch Support */}
+      <div className="overflow-x-auto relative scrollbar-thin">
+        <div className="min-w-[1100px] lg:min-w-[1200px]">
           {/* Timeline Header (24 Equal Horizontal Grid Columns) */}
           <div className="flex border-b border-factory-border bg-slate-950/95 sticky top-0 z-30 text-xs">
-            <div className="w-28 shrink-0 px-3 py-2.5 font-bold border-r border-factory-border text-slate-300 flex items-center justify-between bg-factory-panel">
+            <div className="w-28 shrink-0 px-3 py-2.5 font-bold border-r border-factory-border text-slate-300 flex items-center justify-between bg-slate-900 sticky left-0 z-40 shadow-md">
               <span>号機 (MÁY)</span>
               <span className="text-[10px] text-slate-500 font-normal">TẤN</span>
             </div>
@@ -204,15 +205,15 @@ export const GanttBoard: React.FC<GanttBoardProps> = ({ schedule, isLoading = fa
 
                 return (
                   <div key={m.id} className="flex h-12 hover:bg-slate-800/25 transition-colors group">
-                    {/* Machine Column */}
-                    <div className="w-28 shrink-0 px-3 flex items-center justify-between border-r border-factory-border bg-factory-panel/60">
+                    {/* Machine Column (Sticky On Scroll) */}
+                    <div className="w-28 shrink-0 px-3 flex items-center justify-between border-r border-factory-border bg-slate-900/95 sticky left-0 z-20 backdrop-blur-sm shadow-md">
                       <div>
                         <span className="font-mono font-bold text-white text-sm">{m.id}</span>
                         <span className="block text-[10px] text-slate-500 font-semibold">
                           {m.bay === "A" ? "Bay A" : "Bay B"}
                         </span>
                       </div>
-                      <span className="text-[11px] font-mono text-slate-400 bg-slate-900 px-1.5 py-0.5 rounded border border-slate-800">
+                      <span className="text-[11px] font-mono text-slate-400 bg-slate-950 px-1.5 py-0.5 rounded border border-slate-800">
                         {m.tonnage}T
                       </span>
                     </div>

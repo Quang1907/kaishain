@@ -57,26 +57,26 @@ export const GanttTimelineSlider: React.FC = () => {
   };
 
   return (
-    <div className="bg-factory-card border border-factory-border rounded-xl p-4 mb-5 shadow-sm flex flex-col md:flex-row items-center justify-between gap-4">
+    <div className="bg-factory-card border border-factory-border rounded-xl p-3 sm:p-4 mb-3 sm:mb-5 shadow-sm flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3 sm:gap-4">
       {/* Real-time Factory Clock (Thời Gian Thực Tế 100%) */}
-      <div className="flex items-center gap-3">
-        <div className="w-11 h-11 rounded-xl bg-blue-500/10 border border-blue-500/30 flex items-center justify-center text-blue-400 shadow-sm">
-          <Clock size={22} className={isLiveMode ? "animate-pulse" : ""} />
+      <div className="flex items-center gap-2.5 sm:gap-3">
+        <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-xl bg-blue-500/10 border border-blue-500/30 flex items-center justify-center text-blue-400 shadow-sm shrink-0">
+          <Clock size={20} className={isLiveMode ? "animate-pulse" : ""} />
         </div>
         <div>
-          <div className="flex items-center gap-2">
-            <span className="text-[11px] uppercase text-slate-400 font-bold tracking-wider">
-              Thời Gian Thực Tế Xưởng
+          <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
+            <span className="text-[10px] sm:text-[11px] uppercase text-slate-400 font-bold tracking-wider">
+              Thời Gian Thực Tế
             </span>
-            <span className={`px-2 py-0.5 rounded text-[10px] font-semibold border ${shiftColor}`}>
+            <span className={`px-1.5 sm:px-2 py-0.5 rounded text-[9px] sm:text-[10px] font-semibold border ${shiftColor}`}>
               {currentShiftName}
             </span>
           </div>
           <div className="flex items-baseline gap-2 mt-0.5">
-            <span className="text-2xl font-bold font-mono text-white tracking-tight">
+            <span className="text-xl sm:text-2xl font-bold font-mono text-white tracking-tight">
               {liveDate.toLocaleTimeString("vi-VN", { hour12: false })}
             </span>
-            <span className="text-xs text-slate-400 font-mono">
+            <span className="text-[11px] sm:text-xs text-slate-400 font-mono">
               (Trục Gantt: <strong className="text-blue-400">{formatTimeHour(currentHour)}</strong>)
             </span>
           </div>
@@ -84,13 +84,13 @@ export const GanttTimelineSlider: React.FC = () => {
       </div>
 
       {/* Slider Control for Shift Seek */}
-      <div className="flex-1 max-w-xl w-full px-4">
+      <div className="flex-1 w-full max-w-full lg:max-w-xl px-0 sm:px-2">
         <div className="flex justify-between items-center text-xs mb-1.5">
-          <span className="text-slate-400 font-medium flex items-center gap-1.5">
+          <span className="text-slate-400 font-medium flex items-center gap-1.5 text-[11px] sm:text-xs">
             <Activity size={13} className="text-blue-400" />
-            <span>Mốc Giờ Khảo Sát Điều Kiện JIT:</span>
+            <span>Mốc Khảo Sát JIT:</span>
           </span>
-          <span className="font-mono font-bold text-blue-400 bg-slate-900 px-2 py-0.5 rounded border border-slate-800">
+          <span className="font-mono font-bold text-blue-400 bg-slate-900 px-2 py-0.5 rounded border border-slate-800 text-xs">
             {formatTimeHour(currentHour)}
           </span>
         </div>
@@ -108,19 +108,19 @@ export const GanttTimelineSlider: React.FC = () => {
           className="w-full accent-blue-500 cursor-pointer h-2 bg-slate-800 rounded-lg appearance-none"
         />
 
-        <div className="flex justify-between text-[10px] text-slate-500 font-mono mt-1">
-          <span>07:00 (Sáng)</span>
-          <span>12:00 (Ăn trưa)</span>
-          <span>17:00 (Tan ca ngày)</span>
-          <span>20:00 (Vào ca đêm)</span>
+        <div className="flex justify-between text-[9px] sm:text-[10px] text-slate-500 font-mono mt-1">
+          <span>07:00</span>
+          <span>12:00</span>
+          <span className="hidden sm:inline">17:00</span>
+          <span>20:00</span>
           <span>07:00 (+1)</span>
         </div>
       </div>
 
       {/* Live Sync Controls */}
-      <div className="flex items-center gap-2">
+      <div className="w-full sm:w-auto flex items-center justify-between sm:justify-end gap-2 shrink-0 pt-2 lg:pt-0 border-t border-factory-border/40 lg:border-none">
         {isLiveMode ? (
-          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-semibold">
+          <div className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-[11px] sm:text-xs font-semibold">
             <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
             <span>ĐANG BÁM GIỜ THỰC</span>
           </div>
@@ -129,9 +129,9 @@ export const GanttTimelineSlider: React.FC = () => {
             variant="primary"
             size="sm"
             onClick={handleSnapToLive}
-            className="h-9 px-3 gap-1.5 shadow-sm"
+            className="h-8 px-2.5 sm:px-3 text-xs gap-1.5 shadow-sm"
           >
-            <Radio size={14} className="text-white animate-pulse" />
+            <Radio size={13} className="text-white animate-pulse" />
             <span>Về Giờ Thực Tế</span>
           </Button>
         )}
@@ -143,11 +143,11 @@ export const GanttTimelineSlider: React.FC = () => {
             setIsLiveMode(false);
             setHour(8.0);
           }}
-          className="h-9 px-2.5 text-slate-400 hover:text-white"
+          className="h-8 px-2 sm:px-2.5 text-xs text-slate-400 hover:text-white"
           title="Xem mốc bắt đầu ca sáng (08:00)"
         >
-          <RotateCcw size={14} />
-          <span className="hidden lg:inline text-xs">08:00</span>
+          <RotateCcw size={13} />
+          <span className="text-xs">08:00</span>
         </Button>
       </div>
     </div>

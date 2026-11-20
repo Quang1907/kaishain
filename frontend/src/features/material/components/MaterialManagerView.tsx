@@ -67,35 +67,35 @@ export const MaterialManagerView: React.FC = () => {
   };
 
   return (
-    <div className="p-6 space-y-6 max-w-7xl mx-auto">
+    <div className="p-3 sm:p-6 space-y-4 sm:space-y-6 max-w-7xl mx-auto">
       {/* Top Banner */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-5 rounded-2xl bg-gradient-to-r from-emerald-950/40 via-factory-panel to-slate-900 border border-emerald-500/30">
-        <div className="flex items-center gap-3.5">
-          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-white shadow-lg shadow-emerald-500/20">
-            <Wheat className="w-6 h-6" />
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-emerald-950/40 via-factory-panel to-slate-900 border border-emerald-500/30">
+        <div className="flex items-center gap-2.5 sm:gap-3.5">
+          <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-white shadow-lg shadow-emerald-500/20 shrink-0">
+            <Wheat className="w-5 h-5 sm:w-6 sm:h-6" />
           </div>
           <div>
-            <div className="flex items-center gap-2">
-              <h2 className="text-lg font-bold text-white tracking-wide">
-                PHÂN HỆ NGUYÊN LIỆU: KIỂM SOÁT SẤY NHỰA & THÙNG BAO BÌ
+            <div className="flex items-center gap-1.5 sm:gap-2">
+              <h2 className="text-sm sm:text-lg font-bold text-white tracking-wide">
+                PHÂN HỆ NGUYÊN LIỆU &amp; SẤY NHỰA
               </h2>
-              <Badge variant="success">QUẢN LÝ NGUYÊN LIỆU</Badge>
+              <Badge variant="success">NGUYÊN LIỆU</Badge>
             </div>
-            <p className="text-xs text-slate-400 mt-0.5">
-              Phụ trách: <strong className="text-emerald-400">{currentUser?.full_name || "エジソン (Edison)"}</strong> • Đảm bảo độ ẩm hạt nhựa &lt; 0.02% và thùng bao bì sẵn sàng trước giờ ép
+            <p className="text-[11px] sm:text-xs text-slate-400 mt-0.5 line-clamp-1 sm:line-clamp-none">
+              Phụ trách: <strong className="text-emerald-400">{currentUser?.full_name || "エジソン (Edison)"}</strong> • Đảm bảo độ ẩm hạt &lt; 0.02% &amp; thùng bao bì
             </p>
           </div>
         </div>
 
         {/* Stats Summary */}
-        <div className="flex items-center gap-3">
-          <div className="px-3.5 py-2 rounded-xl bg-factory-card border border-factory-border text-center min-w-[100px]">
-            <div className="text-[11px] text-slate-400 uppercase font-semibold">Đang Sấy / Chờ</div>
-            <div className="text-xl font-extrabold text-amber-400 font-mono">{waitingCount}</div>
+        <div className="w-full sm:w-auto grid grid-cols-2 sm:flex items-center gap-2 sm:gap-3">
+          <div className="px-3 py-2 rounded-xl bg-factory-card border border-factory-border text-center min-w-0 sm:min-w-[100px]">
+            <div className="text-[10px] sm:text-[11px] text-slate-400 uppercase font-semibold">Đang Sấy / Chờ</div>
+            <div className="text-lg sm:text-xl font-extrabold text-amber-400 font-mono">{waitingCount}</div>
           </div>
-          <div className="px-3.5 py-2 rounded-xl bg-factory-card border border-factory-border text-center min-w-[100px]">
-            <div className="text-[11px] text-slate-400 uppercase font-semibold">Đã Cấp Liệu</div>
-            <div className="text-xl font-extrabold text-emerald-400 font-mono">{readyCount}</div>
+          <div className="px-3 py-2 rounded-xl bg-factory-card border border-factory-border text-center min-w-0 sm:min-w-[100px]">
+            <div className="text-[10px] sm:text-[11px] text-slate-400 uppercase font-semibold">Đã Cấp Liệu</div>
+            <div className="text-lg sm:text-xl font-extrabold text-emerald-400 font-mono">{readyCount}</div>
           </div>
         </div>
       </div>

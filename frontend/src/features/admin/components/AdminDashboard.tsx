@@ -63,7 +63,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   return (
     <div className="space-y-6">
       {/* Executive Welcome Hero Banner */}
-      <div className="p-6 rounded-2xl bg-gradient-to-r from-blue-950/60 via-slate-900 to-indigo-950/60 border border-blue-500/30 flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="p-4 sm:p-6 rounded-2xl bg-gradient-to-r from-blue-950/60 via-slate-900 to-indigo-950/60 border border-blue-500/30 flex flex-col md:flex-row md:items-center justify-between gap-3 sm:gap-4">
         <div>
           <div className="flex items-center gap-2">
             <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-blue-500/20 text-blue-400 border border-blue-500/40 uppercase">
@@ -71,7 +71,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
             </span>
             <Badge variant="default">ADMIN ONLY</Badge>
           </div>
-          <h2 className="text-xl font-extrabold text-white mt-1.5 tracking-wide">
+          <h2 className="text-lg sm:text-xl font-extrabold text-white mt-1.5 tracking-wide">
             BẢNG ĐIỀU HÀNH TỔNG THỂ NHÀ MÁY ÉP NHỰA (22 MÁY ÉP)
           </h2>
           <p className="text-xs text-slate-400 mt-1 max-w-2xl leading-relaxed">
@@ -79,21 +79,21 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
           </p>
         </div>
 
-        <div className="flex items-center gap-3 shrink-0">
+        <div className="flex items-center gap-3 shrink-0 self-start md:self-auto">
           <Button
             variant="primary"
             size="md"
             onClick={() => setDate("optimized")}
-            className="bg-amber-600 hover:bg-amber-500 text-white shadow-lg shadow-amber-500/20"
+            className="bg-amber-600 hover:bg-amber-500 text-white shadow-lg shadow-amber-500/20 text-xs sm:text-sm py-2 px-3 sm:px-4"
           >
-            <Zap size={15} />
-            Chạy Tối Ưu Hóa AI JIT
+            <Zap size={14} />
+            <span>Chạy Tối Ưu Hóa AI JIT</span>
           </Button>
         </div>
       </div>
 
       {/* 4 Core Pillars KPI Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         <div
           onClick={() => onNavigateSection("machines")}
           className="p-4 rounded-xl bg-factory-card border border-factory-border hover:border-blue-500/60 cursor-pointer transition-all group"
