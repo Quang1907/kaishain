@@ -31,6 +31,7 @@ class ScheduleRepository(BaseRepository):
                        CAST(start_hour AS FLOAT) as start_hour, 
                        CAST(end_hour AS FLOAT) as end_hour, 
                        planned_qty, event_type, operator_name, 
+                       technician_name, material_handler,
                        material_status, box_status 
                 FROM job_blocks 
                 WHERE schedule_id = %(sched_id)s 
@@ -48,6 +49,11 @@ class ScheduleRepository(BaseRepository):
                 "planned_qty": j["planned_qty"],
                 "event": j["event_type"],
                 "op": j["operator_name"],
+                "technician": j.get("technician_name") or ("宮地 (Miyaji)" if j["event_type"] == "STOP" else "川端 (Kawabata)"),
+                "technician_name": j.get("technician_name") or ("宮地 (Miyaji)" if j["event_type"] == "STOP" else "川端 (Kawabata)"),
+                "operator": j["operator_name"],
+                "operator_name": j["operator_name"],
+                "material_handler": j.get("material_handler") or "エジソン (Edison)",
                 "material_status": j["material_status"],
                 "box_status": j["box_status"]
             } for j in job_rows]
@@ -92,10 +98,25 @@ class ScheduleRepository(BaseRepository):
             cur.execute(self._prepare_sql("DELETE FROM job_blocks WHERE schedule_id = %(sched_id)s"), {"sched_id": sched_id})
 
             ins_job_sql = self._prepare_sql("""
-                INSERT INTO job_blocks (id, schedule_id, machine_id, product_code, start_hour, end_hour, planned_qty, event_type, operator_name, material_status, box_status)
-                VALUES (%(id)s, %(schedule_id)s, %(machine_id)s, %(product_code)s, %(start_hour)s, %(end_hour)s, %(planned_qty)s, %(event_type)s, %(operator_name)s, %(material_status)s, %(box_status)s)
+                INSERT INTO job_blocks (
+                    id, schedule_id, machine_id, product_code, start_hour, end_hour,
+                    planned_qty, event_type, operator_name, technician_name, material_handler,
+                    material_status, box_status
+                ) VALUES (
+                    %(id)s, %(schedule_id)s, %(machine_id)s, %(product_code)s, %(start_hour)s, %(end_hour)s,
+                    %(planned_qty)s, %(event_type)s, %(operator_name)s, %(technician_name)s, %(material_handler)s,
+                    %(material_status)s, %(box_status)s
+                )
             """)
             for j in jobs:
+                tech = j.get("technician_name") or j.get("technician")
+                if not tech:
+                    tech = j.get("op") if j.get("event") == "STOP" else "川端 (Kawabata)"
+                mat_h = j.get("material_handler") or "エジソン (Edison)"
+                op_val = j.get("op") or j.get("operator_name")
+                if not op_val and j.get("event") == "STOP":
+                    op_val = tech
+
                 cur.execute(ins_job_sql, {
                     "id": j.get("id", f"JOB-{sched_id}-{j['machine']}-{int(j['start'])}"),
                     "schedule_id": sched_id,
@@ -105,7 +126,9 @@ class ScheduleRepository(BaseRepository):
                     "end_hour": float(j["end"]),
                     "planned_qty": int(j.get("planned_qty", 0)),
                     "event_type": j.get("event", "PROD"),
-                    "operator_name": j.get("op"),
+                    "operator_name": op_val,
+                    "technician_name": tech,
+                    "material_handler": mat_h,
                     "material_status": j.get("material_status", "READY"),
                     "box_status": j.get("box_status", "READY")
                 })
@@ -127,10 +150,11 @@ class ScheduleRepository(BaseRepository):
             sql = self._prepare_sql("""
                 INSERT INTO job_blocks (
                     id, schedule_id, machine_id, product_code, start_hour, end_hour,
-                    planned_qty, event_type, operator_name, material_status, box_status
+                    planned_qty, event_type, operator_name, technician_name, material_handler,
+                    material_status, box_status
                 ) VALUES (
                     %(id)s, %(sched_id)s, %(m_id)s, %(p_code)s, %(start)s, %(end)s,
-                    %(qty)s, %(event)s, %(op)s, %(mat_st)s, %(box_st)s
+                    %(qty)s, %(event)s, %(op)s, %(tech)s, %(mat_h)s, %(mat_st)s, %(box_st)s
                 )
                 ON CONFLICT (id) DO UPDATE SET
                     machine_id = EXCLUDED.machine_id,
@@ -140,9 +164,19 @@ class ScheduleRepository(BaseRepository):
                     planned_qty = EXCLUDED.planned_qty,
                     event_type = EXCLUDED.event_type,
                     operator_name = EXCLUDED.operator_name,
+                    technician_name = EXCLUDED.technician_name,
+                    material_handler = EXCLUDED.material_handler,
                     material_status = EXCLUDED.material_status,
                     box_status = EXCLUDED.box_status
             """)
+            tech = job.get("technician_name") or job.get("technician")
+            if not tech and job.get("event") == "STOP":
+                tech = job.get("op") or "宮地 (Miyaji)"
+            mat_h = job.get("material_handler") or "エジソン (Edison)"
+            op_val = job.get("op") or job.get("operator_name")
+            if not op_val and job.get("event") == "STOP":
+                op_val = tech
+
             cur.execute(sql, {
                 "id": j_id,
                 "sched_id": schedule_id,
@@ -152,7 +186,9 @@ class ScheduleRepository(BaseRepository):
                 "end": float(job["end"]),
                 "qty": int(job.get("planned_qty", 0)),
                 "event": job.get("event", "PROD"),
-                "op": job.get("op"),
+                "op": op_val,
+                "tech": tech,
+                "mat_h": mat_h,
                 "mat_st": job.get("material_status", "READY"),
                 "box_st": job.get("box_status", "READY")
             })

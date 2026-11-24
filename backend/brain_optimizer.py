@@ -9,7 +9,6 @@ Chức năng:
 """
 from typing import Dict, List, Any, Optional
 import math
-import copy
 from backend.database.repository import repository
 
 class FactoryBrainOptimizer:

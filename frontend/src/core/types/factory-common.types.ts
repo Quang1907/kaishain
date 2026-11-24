@@ -107,17 +107,27 @@ export interface ProductDetail {
 export interface Operator {
   id: number | string;
   name: string;
-  shift: "DAY" | "OVERTIME" | "NIGHT";
+  shift: "DAY" | "OVERTIME" | "NIGHT" | string;
   start: number;
   end: number;
-  mode: "BY_PRODUCT" | "BY_MACHINE";
+  mode: "BY_PRODUCT" | "BY_MACHINE" | string;
   assigned_product?: string | null;
   assigned_machine?: string | null;
   skill: number;
+  is_relief?: boolean;
+  is_relief_operator?: boolean;
 }
 
 export interface JobPrerequisites {
   product_name?: string;
+  technician?: {
+    name: string;
+    role?: string;
+  };
+  material_handler?: {
+    name: string;
+    role?: string;
+  };
   material?: {
     status: string;
     resin: string;
@@ -159,6 +169,11 @@ export interface JobBlock {
   actual_qty?: number;
   event: "PROD" | "STOP" | "MOLD_CHANGE" | "COLOR_CHANGE" | "MAINTENANCE";
   op: string | null; // "トゥー (Thu)"
+  technician?: string | null;
+  technician_name?: string | null;
+  material_handler?: string | null;
+  operator?: string | null;
+  operator_name?: string | null;
   material_status?: string;
   box_status?: string;
   is_auto?: boolean;

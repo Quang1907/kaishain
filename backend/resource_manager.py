@@ -17,10 +17,12 @@ class ResourceManager:
         """
         prod_code = job.get("product")
         if not prod_code or prod_code in ["STOP", "TRY"]:
+            assigned_tech = job.get("technician_name") or job.get("technician") or job.get("op") or "宮地 (Miyaji)"
             return {
-                "material": {"status": ReadinessStatus.READY.value, "detail": "Không yêu cầu cấp liệu"},
-                "box": {"status": ReadinessStatus.READY.value, "detail": "Không yêu cầu thùng"},
-                "operator": {"status": ReadinessStatus.READY.value, "detail": "Không yêu cầu nhân công"},
+                "material": {"status": ReadinessStatus.READY.value, "detail": "Không yêu cầu cấp liệu (Máy dừng)"},
+                "box": {"status": ReadinessStatus.READY.value, "detail": "Không yêu cầu thùng bao bì"},
+                "operator": {"status": ReadinessStatus.READY.value, "detail": f"Thợ máy phụ trách: {assigned_tech}"},
+                "technician": {"status": ReadinessStatus.READY.value, "name": assigned_tech, "detail": "Phụ trách kiểm tra & an toàn thiết bị"},
                 "overall_ready": True
             }
 
@@ -79,10 +81,21 @@ class ResourceManager:
             op_status = ReadinessStatus.ALERT_SHORTAGE.value
             op_msg = f"CHƯA PHÂN CÔNG người đứng máy! (Ưu tiên: {dedicated_op or 'Bất kỳ'})"
 
+        assigned_tech = job.get("technician_name") or job.get("technician") or "川端 (Kawabata)"
+        assigned_mat_h = job.get("material_handler") or "エジソン (Edison)"
+
         overall_ready = (mat_status == ReadinessStatus.READY.value) and (op_status == ReadinessStatus.READY.value)
 
         return {
             "product_name": prod_info["name"],
+            "technician": {
+                "name": assigned_tech,
+                "role": "Thợ máy phụ trách khuôn & kỹ thuật máy"
+            },
+            "material_handler": {
+                "name": assigned_mat_h,
+                "role": "Chuẩn bị hạt nhựa sấy & thùng bao bì"
+            },
             "material": {
                 "status": mat_status,
                 "resin": mat_spec["resin_id"],
