@@ -100,6 +100,7 @@ export interface ProductDetail {
   cycle_time?: number;
   cycle_time_sec?: number;
   scrap_buffer_pct?: number;
+  defect_buffer_pct?: number;
   preferred_mode?: "BY_PRODUCT" | "BY_MACHINE";
   compatible_machines?: (string | number)[];
 }
@@ -120,6 +121,19 @@ export interface Operator {
 
 export interface JobPrerequisites {
   product_name?: string;
+  cycle_time_sec?: number;
+  cavity?: number;
+  defect_buffer_pct?: number;
+  production_calc?: {
+    run_hours: number;
+    total_seconds: number;
+    cycle_time_sec: number;
+    cavity: number;
+    gross_qty: number;
+    defect_pct: number;
+    defect_qty: number;
+    net_good_qty: number;
+  };
   technician?: {
     name: string;
     role?: string;

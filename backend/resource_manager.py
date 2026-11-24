@@ -84,10 +84,35 @@ class ResourceManager:
         assigned_tech = job.get("technician_name") or job.get("technician") or "川端 (Kawabata)"
         assigned_mat_h = job.get("material_handler") or "エジソン (Edison)"
 
+        # 4. Tính toán sản lượng kế hoạch tự động theo Chu kỳ ép (Cycle Time) & Trừ phế phẩm
+        cycle_time = float(prod_info.get("cycle_time_sec", prod_info.get("cycle_time", 57.0)))
+        cavity = int(prod_info.get("cavity", 1))
+        defect_pct = float(prod_info.get("defect_buffer_pct", 2.5))
+
+        run_hours = max(0.0, float(job.get("end", 0.0)) - float(job.get("start", 0.0)))
+        total_seconds = int(run_hours * 3600)
+        total_shots = total_seconds // int(cycle_time) if cycle_time > 0 else 0
+        gross_qty = total_shots * cavity
+        defect_qty = int((gross_qty * defect_pct) / 100.0 + 0.999) if gross_qty > 0 else 0
+        net_good_qty = max(0, gross_qty - defect_qty)
+
         overall_ready = (mat_status == ReadinessStatus.READY.value) and (op_status == ReadinessStatus.READY.value)
 
         return {
             "product_name": prod_info["name"],
+            "cycle_time_sec": cycle_time,
+            "cavity": cavity,
+            "defect_buffer_pct": defect_pct,
+            "production_calc": {
+                "run_hours": round(run_hours, 1),
+                "total_seconds": total_seconds,
+                "cycle_time_sec": cycle_time,
+                "cavity": cavity,
+                "gross_qty": gross_qty,
+                "defect_pct": defect_pct,
+                "defect_qty": defect_qty,
+                "net_good_qty": net_good_qty
+            },
             "technician": {
                 "name": assigned_tech,
                 "role": "Thợ máy phụ trách khuôn & kỹ thuật máy"

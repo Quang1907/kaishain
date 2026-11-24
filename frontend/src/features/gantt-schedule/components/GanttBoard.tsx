@@ -13,6 +13,7 @@ import {
   GENERATE_TIME_OPTIONS,
   getAvailablePersonnel,
 } from "../utils/operatorScheduleUtils";
+import { calculateProductionOutput } from "../utils/productionCalculator";
 import {
   Filter,
   AlertCircle,
@@ -26,6 +27,7 @@ import {
   CheckCircle2,
   AlertTriangle,
   Package,
+  Zap,
 } from "lucide-react";
 
 interface GanttBoardProps {
@@ -62,6 +64,16 @@ export const GanttBoard: React.FC<GanttBoardProps> = ({
   const machines: Machine[] = machinesData || [];
 
   const timeOptions = useMemo(() => GENERATE_TIME_OPTIONS(), []);
+
+  // Tính toán sản lượng tự động theo Chu kỳ ép (Cycle Time) & Trừ phế phẩm
+  const selectedProdInfo = productsData?.find((p) => p.code === productCode);
+  const cycleTimeSec = selectedProdInfo?.cycle_time_sec || selectedProdInfo?.cycle_time || 57.0;
+  const cavity = selectedProdInfo?.cavity || 1;
+  const defectRatePct = selectedProdInfo?.defect_buffer_pct || (selectedProdInfo as any)?.scrap_buffer_pct || 2.5;
+
+  const createCalc = useMemo(() => {
+    return calculateProductionOutput(startH, endH, cycleTimeSec, cavity, defectRatePct);
+  }, [startH, endH, cycleTimeSec, cavity, defectRatePct]);
 
   // Phân loại nhân sự rảnh / bận theo khung giờ [startH, endH] và loại việc
   const personnel = useMemo(() => {
@@ -543,17 +555,29 @@ export const GanttBoard: React.FC<GanttBoardProps> = ({
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-300 uppercase mb-1">
-                  Số Lượng Sản Xuất (pcs)
-                </label>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="text-xs font-semibold text-slate-300 uppercase">
+                    Số Lượng Sản Xuất (pcs)
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => setPlannedQty(createCalc.netGoodQty)}
+                    className="text-[10px] text-blue-400 hover:text-blue-300 font-mono underline flex items-center gap-0.5"
+                  >
+                    <Zap size={10} /> Dùng số tính: {createCalc.netGoodQty.toLocaleString()} pcs
+                  </button>
+                </div>
                 <input
                   type="number"
                   value={plannedQty}
                   onChange={(e) => setPlannedQty(Number(e.target.value))}
-                  className="w-full bg-slate-900 border border-factory-border rounded-lg px-3 py-2 text-sm text-white focus:border-blue-500 font-mono"
+                  className="w-full bg-slate-900 border border-factory-border rounded-lg px-3 py-2 text-sm text-white focus:border-blue-500 font-mono font-bold"
                   min={1}
                   required
                 />
+                <div className="text-[10px] text-slate-400 font-mono mt-1 leading-tight">
+                  💡 {createCalc.runHours}h × 3600s ÷ {cycleTimeSec}s × {cavity} cav − {defectRatePct}% lỗi = <strong className="text-emerald-400">{createCalc.netGoodQty.toLocaleString()} pcs</strong>
+                </div>
               </div>
             </div>
           )}

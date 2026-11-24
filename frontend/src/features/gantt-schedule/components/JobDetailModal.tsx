@@ -7,6 +7,8 @@ import { formatTimeHour } from "@/shared/utils/formatters";
 import { JOB_TYPE_CONFIGS } from "@/core/config/constants";
 import { useUpsertJobMutation, useDeleteJobMutation, useScheduleQuery } from "../api/scheduleApi";
 import { useOperatorsQuery } from "@/features/operators/api/operatorsApi";
+import { useProductsQuery } from "@/features/products-bom/api/productsApi";
+import { calculateProductionOutput } from "../utils/productionCalculator";
 import {
   GENERATE_TIME_OPTIONS,
   getAvailablePersonnel,
@@ -24,6 +26,8 @@ import {
   Clock,
   Users,
   Wrench,
+  Calculator,
+  Zap,
 } from "lucide-react";
 
 export const JobDetailModal: React.FC = () => {
@@ -32,12 +36,16 @@ export const JobDetailModal: React.FC = () => {
   const deleteMutation = useDeleteJobMutation();
   const { data: schedule } = useScheduleQuery(currentDate, currentHour);
   const { data: operatorsData } = useOperatorsQuery();
+  const { data: productsData } = useProductsQuery();
 
   const operators = operatorsData || [];
   const timeOptions = useMemo(() => GENERATE_TIME_OPTIONS(), []);
 
   const [isEditing, setIsEditing] = useState(false);
   const [plannedQty, setPlannedQty] = useState(0);
+  const [cycleTimeSec, setCycleTimeSec] = useState<number>(57.0);
+  const [cavity, setCavity] = useState<number>(1);
+  const [defectRatePct, setDefectRatePct] = useState<number>(2.5);
   const [technicianName, setTechnicianName] = useState("");
   const [operatorName, setOperatorName] = useState("");
   const [materialHandlerName, setMaterialHandlerName] = useState("エジソン (Edison)");
@@ -47,10 +55,42 @@ export const JobDetailModal: React.FC = () => {
 
   useEffect(() => {
     if (selectedJob) {
-      setPlannedQty(selectedJob.planned_qty || 0);
       setStartHour(selectedJob.start);
       setEndHour(selectedJob.end);
       setEventType(selectedJob.event === "STOP" ? "STOP" : "PROD");
+
+      const pInfo = productsData?.find((p) => p.code === selectedJob.product);
+      const defaultCycle =
+        pInfo?.cycle_time_sec ||
+        pInfo?.cycle_time ||
+        selectedJob.prerequisites?.cycle_time_sec ||
+        57.0;
+      const defaultCavity =
+        pInfo?.cavity || selectedJob.prerequisites?.cavity || 1;
+      const defaultDefect =
+        pInfo?.defect_buffer_pct ||
+        pInfo?.scrap_buffer_pct ||
+        selectedJob.prerequisites?.defect_buffer_pct ||
+        2.5;
+
+      setCycleTimeSec(defaultCycle);
+      setCavity(defaultCavity);
+      setDefectRatePct(defaultDefect);
+
+      const calc = calculateProductionOutput(
+        selectedJob.start,
+        selectedJob.end,
+        defaultCycle,
+        defaultCavity,
+        defaultDefect
+      );
+
+      // Nếu planned_qty ban đầu <= 0 hoặc bằng 11 (số mock từ data mẫu), tự động áp dụng số tính toán chuẩn
+      if (!selectedJob.planned_qty || selectedJob.planned_qty === 11) {
+        setPlannedQty(calc.netGoodQty);
+      } else {
+        setPlannedQty(selectedJob.planned_qty);
+      }
 
       const defaultTech =
         selectedJob.technician_name ||
@@ -69,7 +109,39 @@ export const JobDetailModal: React.FC = () => {
 
       setIsEditing(false);
     }
-  }, [selectedJob]);
+  }, [selectedJob, productsData]);
+
+  // Tính toán sản lượng theo chu kỳ ép & trừ phế phẩm trong thời gian thực
+  const productionCalc = useMemo(() => {
+    return calculateProductionOutput(
+      startHour,
+      endHour,
+      cycleTimeSec,
+      cavity,
+      defectRatePct
+    );
+  }, [startHour, endHour, cycleTimeSec, cavity, defectRatePct]);
+
+  const handleStartHourChange = (newStart: number) => {
+    setStartHour(newStart);
+    let newEnd = endHour;
+    if (endHour <= newStart) {
+      newEnd = Math.min(31, newStart + 1.0);
+      setEndHour(newEnd);
+    }
+    if (eventType !== "STOP") {
+      const calc = calculateProductionOutput(newStart, newEnd, cycleTimeSec, cavity, defectRatePct);
+      setPlannedQty(calc.netGoodQty);
+    }
+  };
+
+  const handleEndHourChange = (newEnd: number) => {
+    setEndHour(newEnd);
+    if (eventType !== "STOP") {
+      const calc = calculateProductionOutput(startHour, newEnd, cycleTimeSec, cavity, defectRatePct);
+      setPlannedQty(calc.netGoodQty);
+    }
+  };
 
   // Phân loại nhân sự rảnh / bận theo khung giờ và loại việc (loại trừ khối việc hiện tại khỏi xung đột)
   const personnel = useMemo(() => {
@@ -177,9 +249,20 @@ export const JobDetailModal: React.FC = () => {
             <Badge variant="info" className={config.badge}>
               {config.label}
             </Badge>
-            {selectedJob.event !== "STOP" && selectedJob.planned_qty > 0 && (
-              <div className="text-xs text-slate-400 mt-2">
-                Kế hoạch: <strong className="text-white font-mono">{selectedJob.planned_qty}</strong> pcs
+            {selectedJob.event !== "STOP" && (
+              <div className="text-xs text-slate-400 mt-2 text-right">
+                <div className="flex items-center justify-end gap-1.5">
+                  <span>Kế hoạch:</span>
+                  <strong className="text-white font-mono text-sm bg-blue-950/60 px-2 py-0.5 rounded border border-blue-500/30">
+                    {selectedJob.planned_qty > 0 && selectedJob.planned_qty !== 11
+                      ? selectedJob.planned_qty.toLocaleString()
+                      : productionCalc.netGoodQty.toLocaleString()}
+                  </strong>
+                  <span>pcs</span>
+                </div>
+                <div className="text-[10px] text-slate-400 font-mono mt-1">
+                  ({productionCalc.grossQty.toLocaleString()} thô − {productionCalc.defectQty.toLocaleString()} lỗi | {cycleTimeSec}s/con)
+                </div>
               </div>
             )}
             {selectedJob.event === "STOP" ? (
@@ -246,14 +329,23 @@ export const JobDetailModal: React.FC = () => {
 
               {eventType !== "STOP" ? (
                 <div>
-                  <label className="block text-[11px] font-semibold text-slate-300 uppercase mb-1">
-                    Số Lượng Kế Hoạch (pcs)
-                  </label>
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="block text-[11px] font-semibold text-slate-300 uppercase">
+                      Số Lượng Kế Hoạch (pcs)
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() => setPlannedQty(productionCalc.netGoodQty)}
+                      className="text-[10px] text-blue-400 hover:text-blue-300 font-mono font-medium underline flex items-center gap-0.5"
+                    >
+                      <Zap size={10} /> Dùng số tính toán: {productionCalc.netGoodQty.toLocaleString()} pcs
+                    </button>
+                  </div>
                   <input
                     type="number"
                     value={plannedQty}
                     onChange={(e) => setPlannedQty(Number(e.target.value))}
-                    className="w-full bg-slate-950 border border-factory-border rounded-lg px-3 py-1.5 text-sm text-white font-mono focus:border-blue-500"
+                    className="w-full bg-slate-950 border border-factory-border rounded-lg px-3 py-1.5 text-sm text-white font-mono focus:border-blue-500 font-bold"
                     min={1}
                   />
                 </div>
@@ -263,6 +355,114 @@ export const JobDetailModal: React.FC = () => {
                 </div>
               )}
             </div>
+
+            {/* Khối Tự Động Tính Sản Lượng Theo Chu Kỳ Ép (Cycle Time) & Trừ Phế Phẩm */}
+            {eventType !== "STOP" && (
+              <div className="p-3 bg-blue-950/20 border border-blue-500/40 rounded-xl space-y-2.5">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-1.5 text-xs font-bold text-blue-300 uppercase">
+                    <Calculator size={14} className="text-blue-400" />
+                    <span>Máy Tính Sản Lượng Tự Động (Theo Chu Kỳ Ép & Trừ Lỗi)</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setPlannedQty(productionCalc.netGoodQty)}
+                    className="text-[11px] bg-blue-600 hover:bg-blue-500 text-white font-semibold px-2.5 py-0.5 rounded flex items-center gap-1 transition-all shadow-sm"
+                  >
+                    <Zap size={11} /> Áp dụng {productionCalc.netGoodQty.toLocaleString()} pcs
+                  </button>
+                </div>
+
+                <div className="grid grid-cols-3 gap-2 pt-0.5">
+                  <div>
+                    <label className="block text-[10px] text-slate-400 font-medium uppercase mb-0.5">
+                      1 Con hàng tốn (s)
+                    </label>
+                    <div className="relative">
+                      <input
+                        type="number"
+                        step="0.5"
+                        min="1"
+                        value={cycleTimeSec}
+                        onChange={(e) => {
+                          const val = Math.max(1, Number(e.target.value));
+                          setCycleTimeSec(val);
+                          const newCalc = calculateProductionOutput(startHour, endHour, val, cavity, defectRatePct);
+                          setPlannedQty(newCalc.netGoodQty);
+                        }}
+                        className="w-full bg-slate-950 border border-factory-border rounded px-2 py-1 text-xs text-white font-mono focus:border-blue-500 font-bold"
+                        placeholder="VD: 57"
+                      />
+                      <span className="absolute right-2 top-1 text-[10px] text-slate-400 font-mono">giây</span>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-[10px] text-slate-400 font-medium uppercase mb-0.5">
+                      Số Cavity khuôn
+                    </label>
+                    <div className="relative">
+                      <input
+                        type="number"
+                        min="1"
+                        value={cavity}
+                        onChange={(e) => {
+                          const val = Math.max(1, Number(e.target.value));
+                          setCavity(val);
+                          const newCalc = calculateProductionOutput(startHour, endHour, cycleTimeSec, val, defectRatePct);
+                          setPlannedQty(newCalc.netGoodQty);
+                        }}
+                        className="w-full bg-slate-950 border border-factory-border rounded px-2 py-1 text-xs text-white font-mono focus:border-blue-500 font-bold"
+                      />
+                      <span className="absolute right-2 top-1 text-[10px] text-slate-400 font-mono">lòng</span>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-[10px] text-slate-400 font-medium uppercase mb-0.5">
+                      Trừ phế phẩm / lỗi
+                    </label>
+                    <div className="relative">
+                      <input
+                        type="number"
+                        step="0.1"
+                        min="0"
+                        max="50"
+                        value={defectRatePct}
+                        onChange={(e) => {
+                          const val = Math.max(0, Number(e.target.value));
+                          setDefectRatePct(val);
+                          const newCalc = calculateProductionOutput(startHour, endHour, cycleTimeSec, cavity, val);
+                          setPlannedQty(newCalc.netGoodQty);
+                        }}
+                        className="w-full bg-slate-950 border border-factory-border rounded px-2 py-1 text-xs text-white font-mono focus:border-blue-500 font-bold"
+                      />
+                      <span className="absolute right-2 top-1 text-[10px] text-slate-400 font-mono">%</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Diễn giải chi tiết công thức toán học minh bạch */}
+                <div className="bg-slate-950/80 p-2.5 rounded-lg border border-factory-border/50 text-[11px] text-slate-300 space-y-1 font-mono">
+                  <div className="flex items-center justify-between text-slate-400">
+                    <span>Thời lượng chạy ({formatTimeHour(startHour)} → {formatTimeHour(endHour)}):</span>
+                    <strong className="text-white">{productionCalc.runHours}h (= {productionCalc.totalSeconds.toLocaleString()} giây)</strong>
+                  </div>
+                  <div className="flex items-center justify-between text-sky-400">
+                    <span>Sản lượng lý thuyết (Gross):</span>
+                    <strong>{productionCalc.grossQty.toLocaleString()} pcs ({productionCalc.totalSeconds.toLocaleString()}s ÷ {cycleTimeSec}s × {cavity})</strong>
+                  </div>
+                  <div className="flex items-center justify-between text-rose-400">
+                    <span>Trừ hàng bị lỗi / phế phẩm ({defectRatePct}%):</span>
+                    <strong>- {productionCalc.defectQty.toLocaleString()} pcs</strong>
+                  </div>
+                  <div className="flex items-center justify-between pt-1 border-t border-slate-800 text-xs font-bold text-emerald-400">
+                    <span>➜ Thành phẩm kế hoạch đạt chuẩn (Net):</span>
+                    <span className="text-sm text-emerald-300 font-bold">{productionCalc.netGoodQty.toLocaleString()} pcs</span>
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* Nếu là STOP: thông báo không cần chọn mã hàng/số lượng */}
             {eventType === "STOP" && (
@@ -284,13 +484,7 @@ export const JobDetailModal: React.FC = () => {
                   </label>
                   <select
                     value={startHour}
-                    onChange={(e) => {
-                      const newStart = Number(e.target.value);
-                      setStartHour(newStart);
-                      if (endHour <= newStart) {
-                        setEndHour(Math.min(31, newStart + 1.0));
-                      }
-                    }}
+                    onChange={(e) => handleStartHourChange(Number(e.target.value))}
                     className="w-full bg-slate-950 border border-factory-border rounded-lg px-2.5 py-1.5 text-xs text-white font-mono focus:border-blue-500"
                   >
                     {timeOptions.map((opt) => (
@@ -308,7 +502,7 @@ export const JobDetailModal: React.FC = () => {
                   </label>
                   <select
                     value={endHour}
-                    onChange={(e) => setEndHour(Number(e.target.value))}
+                    onChange={(e) => handleEndHourChange(Number(e.target.value))}
                     className="w-full bg-slate-950 border border-factory-border rounded-lg px-2.5 py-1.5 text-xs text-white font-mono focus:border-blue-500"
                   >
                     {timeOptions

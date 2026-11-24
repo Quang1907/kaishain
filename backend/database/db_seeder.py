@@ -92,27 +92,50 @@ def seed_database(force_reseed: bool = False):
     repository.seed_break_schedules(breaks)
     print(f"✅ Đã nạp {len(breaks)} khung giờ nghỉ ngơi & phân công người chạy chuyền.")
 
-    # 5. Nạp Lịch trình 2 ngày thực tế từ ảnh chụp
+    # 5. Nạp Lịch trình 2 ngày thực tế từ ảnh chụp (Tự động tính sản lượng chuẩn theo Cycle Time & Trừ phế phẩm)
+    def _enrich_job_planned_qty(job_list, products_dict):
+        for j in job_list:
+            if j.get("event") == "PROD":
+                p_code = j.get("product")
+                curr_qty = j.get("planned_qty", 0)
+                if curr_qty <= 0 or curr_qty == 11:
+                    p = products_dict.get(p_code)
+                    if p:
+                        c_time = float(p.get("cycle_time_sec", 30.0))
+                        cav = int(p.get("cavity", 1))
+                        def_pct = float(p.get("defect_buffer_pct", 2.5))
+                        run_h = max(0.0, float(j["end"]) - float(j["start"]))
+                        total_sec = int(run_h * 3600)
+                        shots = total_sec // int(c_time) if c_time > 0 else 0
+                        gross = shots * cav
+                        def_qty = int((gross * def_pct) / 100.0 + 0.999)
+                        j["planned_qty"] = max(0, gross - def_qty)
+            elif j.get("event") == "STOP":
+                j["planned_qty"] = 0
+        return job_list
+
     sched_d1 = get_schedule_day1_nov12()
+    enriched_jobs_d1 = _enrich_job_planned_qty(sched_d1["jobs"], products_data)
     repository.save_schedule(
         sched_id="2026-11-12",
         date_str="2026-11-12",
         day_of_week=sched_d1["day_of_week"],
         notes=sched_d1["notes"],
-        jobs=sched_d1["jobs"],
+        jobs=enriched_jobs_d1,
         is_optimized=False
     )
 
     sched_d2 = get_schedule_day2_nov13()
+    enriched_jobs_d2 = _enrich_job_planned_qty(sched_d2["jobs"], products_data)
     repository.save_schedule(
         sched_id="2026-11-13",
         date_str="2026-11-13",
         day_of_week=sched_d2["day_of_week"],
         notes=sched_d2["notes"],
-        jobs=sched_d2["jobs"],
+        jobs=enriched_jobs_d2,
         is_optimized=False
     )
-    print("✅ Đã nạp 2 ngày lịch trình thực tế (11/12 & 11/13) với đầy đủ ○ (型替), △ (色替), □ (計画停止).")
+    print("✅ Đã nạp 2 ngày lịch trình thực tế (11/12 & 11/13) với đầy đủ ○ (型替), △ (色替), □ (計画停止) & Sản lượng chuẩn Cycle Time.")
 
     # 6. Nạp Lệnh xuất hàng
     orders = get_master_shipping_orders()
